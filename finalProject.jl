@@ -16,16 +16,18 @@ function getHandicapNumber(lines)
 	return "ERROR: Cannot read handicap"
 end
 
-function LetToNum(letCoor)
+function letToNum(letCoor)
 	numCoor = zeros(1,2)
 	setindex!(numCoor, Int(letCoor[1])-96, 1)
 	setindex!(numCoor, Int(letCoor[2])-96, 2)
 end
 
-function getHandicapCoordinates(file)
+function getHandicapCoordinates(fileName)
+	file = open(fileName)
 	lines = readlines(file)
 	hnNumb = getHandicapNumber(lines)
-	
+	close(file)
+
 	# Exit if there is no handicap
 	if hnNumb == 0
 		return 0
@@ -36,7 +38,7 @@ function getHandicapCoordinates(file)
 	# No loop if only 1 handicap
 	if hnNumb == 1
 		hnCoor = filter(x -> contains(x, "AB"),lines)[1] # Filtering handicap coordinates line
-		coords[1:2]=LetToNum(hnCoor[4:5])
+		coords[1:2]=letToNum(hnCoor[4:5])
 		return coords
 	end 
 	
@@ -51,14 +53,14 @@ function getHandicapCoordinates(file)
 				# Coordinate line that start with "AB"
 				if ln[1] == 'A'
 					#println("Handicap at: ",ln[4:5])
-					coords[cntr:cntr+1]=LetToNum(ln[4:5])
+					coords[cntr:cntr+1]=letToNum(ln[4:5])
 					cntr = cntr + 2
 					end
 
 				# Coordinate line that start with "["
 				if ln[1] == '['
 					#println("Handicap at: ",ln[2:3])
-					coords[cntr:cntr+1]=LetToNum(ln[2:3])
+					coords[cntr:cntr+1]=letToNum(ln[2:3])
 					cntr = cntr + 2
 				end				
 			end
@@ -77,16 +79,55 @@ function coordToBoard(board,coords)
 	end
 end
 
+function getWhiteMoves(fileName)
+	file = open(fileName)
+	lines = readlines(file)
+	close(file)
+
+	coords = []
+
+	tmpLine = filter(x -> contains(x, "W["),lines)		# Filtering coordinates line
+	cooLine = filter(x -> contains(x, "B["),tmpLine)[1]	# Filtering coordinates line
+	
+	for i=1:400
+		if contains(cooLine, "W[")
+			indx = search(cooLine, "W[")[2] + 1
+			
+			if cooLine[indx] != ']'	# Player made a move
+				curCoor = letToNum(cooLine[indx:indx+1])	# Find next move coordinate
+				curCoor = map(x -> Int(x), curCoor)
+				println("White Move " , i , ":\t" , cooLine[indx:indx+1], " " ,curCoor)
+
+				push!(coords,curCoor)						# Add to coordinates array
+			else					# White Player Passed
+				curCoor = map(x -> Int(x),zeros(1,2))		# Create empty coordiane array
+				push!(coords,curCoor)						# Add to coordinates array
+			end
+
+			# Go to next move
+			cooLine = cooLine[indx+2:end]
+		end
+	end
+	#println(coords)
+	coords
+end
+
+function getBlackMoves(file)
+
+end
 
 # Open file
-file = open("Documents/KnetAlphaGO/Dataset/2015-05-01-3.sgf")
+fileN = "Documents/KnetAlphaGO/Dataset/2015-05-01-3.sgf"
 
 # Generate 19x19 board
 board = zeros(19,19)
 
 
 
-hndCoords = getHandicapCoordinates(file)
+hndCoords = getHandicapCoordinates(fileN)
+
+whiteMoves = getWhiteMoves(fileN)
+blackMoves = getBlackMoves(fileN)
 
 coordToBoard(board,hndCoords)
 
