@@ -25,13 +25,39 @@ function getHandicapCoordinates(lines)
 
 	coords = zeros(2,hnNumb)
 
+	# No loop if only 1 handicap
 	if hnNumb == 1
 		hnCoor = filter(x -> contains(x, "AB"),lines)[1] # Filtering handicap coordinates line
 		coords[1:2]=LetToNum(hnCoor[4:5])
 		return coords
 	end 
 	
+	# Loop for 1+ handicaps
+	line = 1
+	cntr = 1
+	for ln in lines
+		if line < 19		# Skip first 18 lines
+			line = line +1	
+		else				# Start reading
+			if !contains(ln, ";") && contains(ln, "[") 
+				# Coordinate line that start with "AB"
+				if ln[1] == 'A'
+					println(ln[4:5])
+					coords[cntr:cntr+1]=LetToNum(ln[4:5])
+					cntr = cntr + 2
+					end
 
+				# Coordinate line that start with "["
+				if ln[1] == '['
+					println(ln[2:3])
+					coords[cntr:cntr+1]=LetToNum(ln[2:3])
+					#cntr = cntr + 2
+				end				
+			end
+		end
+	end
+	print(hnNumb)
+	print(coords)
 end
 
 function LetToNum(letCoor)
@@ -50,3 +76,7 @@ board = zeros(19,19)
 
 
 getHandicapCoordinates(lines)
+
+
+writedlm("Documents/KnetAlphaGO/board.txt", board)
+#board2 = readdlm("Documents/KnetAlphaGO/test.txt")
