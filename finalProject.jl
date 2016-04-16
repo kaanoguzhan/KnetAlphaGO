@@ -16,7 +16,7 @@ function getHandicapNumber(lines)
 	return "ERROR: Cannot read handicap"
 end
 
-function letToNum(letCoor)
+function letToCoor(letCoor)
 	numCoor = zeros(1,2)
 	setindex!(numCoor, Int(letCoor[1])-96, 1)
 	setindex!(numCoor, Int(letCoor[2])-96, 2)
@@ -34,12 +34,12 @@ function getHandicapCoordinates(fileName)
 		return 0
 	end
 
-	coords = zeros(2,hnNumb)
+	coords = []
 
 	# No loop if only 1 handicap
 	if hnNumb == 1
 		hnCoor = filter(x -> contains(x, "AB"),lines)[1] # Filtering handicap coordinates line
-		coords[1:2]=letToNum(hnCoor[4:5])
+		coords[1:2]=letToCoor(hnCoor[4:5])
 		return coords
 	end 
 	
@@ -54,29 +54,30 @@ function getHandicapCoordinates(fileName)
 				# Coordinate line that start with "AB"
 				if ln[1] == 'A'
 					#println("Handicap at: ",ln[4:5])
-					coords[cntr:cntr+1]=letToNum(ln[4:5])
+					push!(coords,letToCoor(ln[4:5]))
 					cntr = cntr + 2
-					end
+				end
 
 				# Coordinate line that start with "["
 				if ln[1] == '['
 					#println("Handicap at: ",ln[2:3])
-					coords[cntr:cntr+1]=letToNum(ln[2:3])
+					push!(coords,letToCoor(ln[2:3]))
 					cntr = cntr + 2
 				end				
 			end
 		end
 	end
-	coords = map(x -> Int(x),coords)
 	#println("Handicap Coordinates\n",coords)
 	return coords
 end
 
 function coordToBoard(board,coords)
-	cooSize = size(coords)[2]
+	cooSize = size(coords)[1]
 	
-	for i = 0 : cooSize - 1
-		board[coords[i*2 + 1],coords[i*2 + 2]] = 1
+	for i = 1 : cooSize
+		if coords[i][1] != 0 && coords[i][2] != 0
+			board[coords[i][1],coords[i][2]] = 1
+		end
 	end
 end
 
@@ -103,12 +104,12 @@ function getWhiteMoves(fileName)
 			indx = search(cooLine, "W[")[2] + 1
 			
 			if cooLine[indx] != ']'	# White player made a move
-				curCoor = letToNum(cooLine[indx:indx+1])	# Find next move coordinate
-				println("White Move " , i , ":\t" , cooLine[indx:indx+1], " " ,curCoor)
+				curCoor = letToCoor(cooLine[indx:indx+1])	# Find next move coordinate
+				#println("White Move " , i , ":\t" , cooLine[indx:indx+1], " " ,curCoor)
 
 				push!(coords,curCoor)						# Add to coordinates array
 			else					# White player Passed
-				println("Black Pass ", i)
+				#println("Black Pass ", i)
 				push!(coords,passCoordinate())						# Add to coordinates array
 			end
 
@@ -129,12 +130,12 @@ function getBlackMoves(fileName)
 			indx = search(cooLine, "B[")[2] + 1
 			
 			if cooLine[indx] != ']'	# Black player made a move
-				curCoor = letToNum(cooLine[indx:indx+1])	# Find next move coordinate
-				println("Black Move " , i , ":\t" , cooLine[indx:indx+1], " " ,curCoor)
+				curCoor = letToCoor(cooLine[indx:indx+1])	# Find next move coordinate
+				#println("Black Move " , i , ":\t" , cooLine[indx:indx+1], " " ,curCoor)
 
 				push!(coords,curCoor)						# Add to coordinates array
 			else					# Black player Passed
-				println("Black Pass ", i)
+				#println("Black Pass ", i)
 				push!(coords,passCoordinate())						# Add to coordinates array
 			end
 
