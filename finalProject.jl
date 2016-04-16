@@ -1,14 +1,14 @@
 function getHandicapNumber(file)
-	handicap = filter(x -> contains(x, "ST"),lines) #Get Handicap line
+	hndLine = filter(x -> contains(x, "ST"),lines) # Filtering handicap Number line
 
 	# Single number handicap
-	if handicap[1][3] == '[' && handicap[1][5] == ']'
-		return handicap[1][4]
+	if hndLine[1][3] == '[' && hndLine[1][5] == ']'
+		return hndLine[1][4]
 	end
 
 	# Double number handicap
-	if handicap[1][3] == '[' && handicap[1][5] == ']'
-		return handicap[1][4]
+	if hndLine[1][3] == '[' && hndLine[1][5] == ']'
+		return hndLine[1][4]
 	end
 
 	return "ERROR: Cannot read handicap"
