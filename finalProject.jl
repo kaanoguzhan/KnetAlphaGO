@@ -9,9 +9,7 @@ function getHandicapNumber(lines)
 
 	# Double number handicap
 	if hndLine[1][3] == '[' && hndLine[1][6] == ']'
-		#println("Total Handicap number: ",
-		#	(Int(hndLine[1][4])-48) * 10 +
-		#	(Int(hndLine[1][5])-48))
+		#println("Total Handicap number: ",(Int(hndLine[1][4])-48) * 10 + (Int(hndLine[1][5])-48))
 		return Int((Int(hndLine[1][4])-48) * 10 + (Int(hndLine[1][5])-48))
 	end
 
@@ -24,7 +22,8 @@ function LetToNum(letCoor)
 	setindex!(numCoor, Int(letCoor[2])-96, 2)
 end
 
-function getHandicapCoordinates(lines)
+function getHandicapCoordinates(file)
+	lines = readlines(file)
 	hnNumb = getHandicapNumber(lines)
 	
 	# Exit if there is no handicap
@@ -51,33 +50,46 @@ function getHandicapCoordinates(lines)
 			if !contains(ln, ";") && contains(ln, "[") 
 				# Coordinate line that start with "AB"
 				if ln[1] == 'A'
-					#println("Handicap coordinate: ",ln[4:5])
+					#println("Handicap at: ",ln[4:5])
 					coords[cntr:cntr+1]=LetToNum(ln[4:5])
 					cntr = cntr + 2
 					end
 
 				# Coordinate line that start with "["
 				if ln[1] == '['
-					#println("Handicap coordinate: ",ln[2:3])
+					#println("Handicap at: ",ln[2:3])
 					coords[cntr:cntr+1]=LetToNum(ln[2:3])
 					cntr = cntr + 2
 				end				
 			end
 		end
 	end
+	coords = map(x -> Int(x),coords)
 	#println("Handicap Coordinates\n",coords)
+	return coords
+end
+
+function coordToBoard(board,coords)
+	cooSize = size(coords)[2]
+	
+	for i = 0 : cooSize - 1
+		board[coords[i*2 + 1],coords[i*2 + 2]] = 1
+	end
 end
 
 
-# Read file line by line
-file = open("Documents/KnetAlphaGO/Dataset/2015-05-01-1.sgf")
-lines = readlines(file)
+# Open file
+file = open("Documents/KnetAlphaGO/Dataset/2015-05-01-3.sgf")
 
 # Generate 19x19 board
 board = zeros(19,19)
 
 
-getHandicapCoordinates(lines)
+
+hndCoords = getHandicapCoordinates(file)
+
+coordToBoard(board,hndCoords)
+
 
 
 writedlm("Documents/KnetAlphaGO/board.txt", board)
