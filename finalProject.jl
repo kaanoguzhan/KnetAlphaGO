@@ -1,22 +1,31 @@
-function getHandicapNumber(file)
-	hndLine = filter(x -> contains(x, "ST"),lines) # Filtering handicap Number line
+function getHandicapNumber(lines)
+	hndLine = filter(x -> contains(x, "HA"),lines) # Filtering handicap Number line
 
 	# Single number handicap
 	if hndLine[1][3] == '[' && hndLine[1][5] == ']'
-		return hndLine[1][4]
+		#println("Total Handicap number: ",Int(hndLine[1][4])-48)
+		return Int(hndLine[1][4])-48 
 	end
 
 	# Double number handicap
-	if hndLine[1][3] == '[' && hndLine[1][5] == ']'
-		return hndLine[1][4]
+	if hndLine[1][3] == '[' && hndLine[1][6] == ']'
+		#println("Total Handicap number: ",
+		#	(Int(hndLine[1][4])-48) * 10 +
+		#	(Int(hndLine[1][5])-48))
+		return Int((Int(hndLine[1][4])-48) * 10 + (Int(hndLine[1][5])-48))
 	end
 
 	return "ERROR: Cannot read handicap"
 end
 
+function LetToNum(letCoor)
+	numCoor = zeros(1,2)
+	setindex!(numCoor, Int(letCoor[1])-96, 1)
+	setindex!(numCoor, Int(letCoor[2])-96, 2)
+end
 
 function getHandicapCoordinates(lines)
-	hnNumb = Int(getHandicapNumber(lines))-48
+	hnNumb = getHandicapNumber(lines)
 	
 	# Exit if there is no handicap
 	if hnNumb == 0
@@ -42,33 +51,26 @@ function getHandicapCoordinates(lines)
 			if !contains(ln, ";") && contains(ln, "[") 
 				# Coordinate line that start with "AB"
 				if ln[1] == 'A'
-					println(ln[4:5])
+					#println("Handicap coordinate: ",ln[4:5])
 					coords[cntr:cntr+1]=LetToNum(ln[4:5])
 					cntr = cntr + 2
 					end
 
 				# Coordinate line that start with "["
 				if ln[1] == '['
-					println(ln[2:3])
+					#println("Handicap coordinate: ",ln[2:3])
 					coords[cntr:cntr+1]=LetToNum(ln[2:3])
-					#cntr = cntr + 2
+					cntr = cntr + 2
 				end				
 			end
 		end
 	end
-	print(hnNumb)
-	print(coords)
-end
-
-function LetToNum(letCoor)
-	numCoor = zeros(1,2)
-	setindex!(numCoor, Int(letCoor[1])-96, 1)
-	setindex!(numCoor, Int(letCoor[2])-96, 2)
+	#println("Handicap Coordinates\n",coords)
 end
 
 
 # Read file line by line
-file = open("KnetAlphaGO/Dataset/2015-05-01-1.sgf")
+file = open("Documents/KnetAlphaGO/Dataset/2015-05-01-1.sgf")
 lines = readlines(file)
 
 # Generate 19x19 board
