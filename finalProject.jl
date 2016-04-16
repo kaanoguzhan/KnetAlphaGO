@@ -20,6 +20,7 @@ function letToNum(letCoor)
 	numCoor = zeros(1,2)
 	setindex!(numCoor, Int(letCoor[1])-96, 1)
 	setindex!(numCoor, Int(letCoor[2])-96, 2)
+	numCoor = map(x -> Int(x) ,numCoor)
 end
 
 function getHandicapCoordinates(fileName)
@@ -79,29 +80,36 @@ function coordToBoard(board,coords)
 	end
 end
 
-function getWhiteMoves(fileName)
+function passCoordinate()
+	# Create empty coordiane array
+	map(x -> Int(x),zeros(1,2))
+end
+
+function getMoveCoordinatesLine(fileName)
 	file = open(fileName)
 	lines = readlines(file)
 	close(file)
 
-	coords = []
+	tmpLine = filter(x -> contains(x, "W["),lines)		# Isolating coordinates line
+	cooLine = filter(x -> contains(x, "B["),tmpLine)[1]	# Isolating coordinates line
+end
 
-	tmpLine = filter(x -> contains(x, "W["),lines)		# Filtering coordinates line
-	cooLine = filter(x -> contains(x, "B["),tmpLine)[1]	# Filtering coordinates line
-	
-	for i=1:400
+function getWhiteMoves(fileName)
+	cooLine = getMoveCoordinatesLine(fileName)
+
+	coords = []
+	for i=1:361  # 361 = 19*19
 		if contains(cooLine, "W[")
 			indx = search(cooLine, "W[")[2] + 1
 			
-			if cooLine[indx] != ']'	# Player made a move
+			if cooLine[indx] != ']'	# White player made a move
 				curCoor = letToNum(cooLine[indx:indx+1])	# Find next move coordinate
-				curCoor = map(x -> Int(x), curCoor)
 				println("White Move " , i , ":\t" , cooLine[indx:indx+1], " " ,curCoor)
 
 				push!(coords,curCoor)						# Add to coordinates array
-			else					# White Player Passed
-				curCoor = map(x -> Int(x),zeros(1,2))		# Create empty coordiane array
-				push!(coords,curCoor)						# Add to coordinates array
+			else					# White player Passed
+				println("Black Pass ", i)
+				push!(coords,passCoordinate())						# Add to coordinates array
 			end
 
 			# Go to next move
@@ -109,11 +117,33 @@ function getWhiteMoves(fileName)
 		end
 	end
 	#println(coords)
-	coords
+	return coords
 end
 
-function getBlackMoves(file)
+function getBlackMoves(fileName)
+	cooLine = getMoveCoordinatesLine(fileName)
 
+	coords = []
+	for i=1:361  # 361 = 19*19
+		if contains(cooLine, "B[")
+			indx = search(cooLine, "B[")[2] + 1
+			
+			if cooLine[indx] != ']'	# Black player made a move
+				curCoor = letToNum(cooLine[indx:indx+1])	# Find next move coordinate
+				println("Black Move " , i , ":\t" , cooLine[indx:indx+1], " " ,curCoor)
+
+				push!(coords,curCoor)						# Add to coordinates array
+			else					# Black player Passed
+				println("Black Pass ", i)
+				push!(coords,passCoordinate())						# Add to coordinates array
+			end
+
+			# Go to next move
+			cooLine = cooLine[indx+2:end]
+		end
+	end
+	#println(coords)
+	return coords
 end
 
 # Open file
