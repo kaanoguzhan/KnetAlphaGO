@@ -98,14 +98,30 @@ function getHandicapCoordinates(fileName)
 	return CoorCont
 end
 
-function coordToBoard(board,coords)
-	cooSize = size(coords)[1]
-	
-	for i = 1 : cooSize
+# # # # # # # # # # # # # #		Playing Moves			# # # # # # # # # # # # # #
+
+# player = N -> remove any stone from coordinate(s)
+# player = W -> Place white stone to coordinate(s)
+# player = B -> Place black stone to coordinate(s)
+function coordToBoard(board,coords; player = 'N')
+	loopSize = size(coords)[1]
+
+	value = 0
+	if player == 'B' 
+		value = 1
+	elseif player == 'W'
+		value = 2
+	end
+
+	for i = 1 : loopSize
 		if coords[i][1] != 0 && coords[i][2] != 0
-			board[coords[i][1],coords[i][2]] = 1
+			board[coords[i][1],coords[i][2]] = value
 		end
 	end
+end
+
+function play(board,coordinate,player)
+	# TODO
 end
 
 # # # # # # # # # # # # # #		Reading Player Moves	# # # # # # # # # # # # # #
@@ -191,6 +207,36 @@ function getKomi(fileName)
 	return "ERROR: Cannot read Komi"
 end
 
+# # # # # # # # # # # # # #		Input feature plane			# # # # # # # # # # # # # #
+
+function getIFP(board, player)
+	IFP = zeros(19,19,48)	# Initialize empty Input feature plane
+
+	ply = 0
+	opp = 0
+	if player == 'B' 
+		ply = 1
+		opp = 2
+	elseif player == 'W'
+		ply = 2
+		opp = 1
+	end
+
+	# 1		Player Stones
+	IFP[:,:,1] = map(x -> x == ply ? 1 : 0 ,board)
+
+	# 2		Opponent Stones
+	IFP[:,:,2] = map(x -> x == opp ? 1 : 0 ,board)
+
+	# 3		Neutral/Empty Stones
+	IFP[:,:,3] = map(x -> x == 0   ? 1 : 0 ,board)
+
+	# 4		Ones
+	IFP[:,:,4] = map(x -> 1,board)
+
+	return IFP
+end
+
 
 # Open file
 fileN = "Documents/KnetAlphaGO/Dataset/2015-05-01-3.sgf"
@@ -205,8 +251,9 @@ hndCoords = getHandicapCoordinates(fileN)
 whiteMoves = getWhiteMoves(fileN)
 blackMoves = getBlackMoves(fileN)
 
-coordToBoard(board,hndCoords)
 
+coordToBoard(board,hndCoords,player = 'W')
+IFP = getIFP(board, 'W')
 
 writedlm("Documents/KnetAlphaGO/board.txt", board)
 #board2 = readdlm("Documents/KnetAlphaGO/test.txt")
