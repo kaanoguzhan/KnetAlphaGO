@@ -2,9 +2,22 @@
 
 function numToCoor(numCoor)
 	Coor = zeros(1,2)
-	setindex!(Coor, Int(numCoor[1])-48, 1)
-	setindex!(Coor, Int(numCoor[2])-48, 2)
+
+	# Coordinates are given as "00" - String
+	if typeof(numCoor) == ASCIIString
+		setindex!(Coor, Int(numCoor[1])-48, 1)
+		setindex!(Coor, Int(numCoor[2])-48, 2)
+		Coor = map(x -> Int(x) ,Coor) 
+	end
+
+	# Coordinates are given as 00 - Integer
+	if typeof(numCoor) == Int64
+		setindex!(Coor, Int((numCoor - (numCoor%10)) / 10), 1)
+		setindex!(Coor, Int(numCoor%10), 2)
+	end
+
 	Coor = map(x -> Int(x) ,Coor) 
+	return Coor
 end
 
 function letToCoor(letCoor)
@@ -167,7 +180,55 @@ function play(board,coordinate,player)
 end
 
 function getNonNeurtalNeigbours(board,coordinate)
-	#TODO
+	coords = CoorContainer()
+	x = coordinate[1][1]
+	y = coordinate[1][2]
+	
+	println("Looking non-neutral neighbours of ", x*10 + y)
+	if	board[ x+1 <= 19 ? x+1 : x , y ] != 0
+		println((x+1)*10 + y , " is not neutral - Down")
+		addCoordinate(coords,numToCoor((x+1)*10 + y))
+	end
+	if	board[ x-1 >= 1  ? x-1 : x , y ] != 0
+		println((x-1)*10 + y , " is not neutral - Up")
+		addCoordinate(coords,numToCoor((x-1)*10 + y))
+	end
+	if	board[ x , y+1 <= 19 ? y+1 : y ] != 0
+		println(x*10 + y+1 , " is not neutral - Right")
+		addCoordinate(coords,numToCoor(x*10 + y+1))
+	end
+	if	board[ x , y-1 >= 1  ? y-1 : y ] != 0
+		println(x*10 + y-1 , " is not neutral - Left")
+		addCoordinate(coords,numToCoor(x*10 + y-1))
+	end
+
+	return coords
+end
+
+function getNeurtalNeigbours(board,coordinate)
+	coords = CoorContainer()
+	x = coordinate[1][1]
+	y = coordinate[1][2]
+	
+	println("Looking neutral neighbours of ", x*10 + y)
+	if	board[ x+1 <= 19 ? x+1 : x , y ] == 0
+		println((x+1)*10 + y , " is neutral - Down")
+		addCoordinate(coords,numToCoor((x+1)*10 + y))
+	end
+	if	board[ x-1 >= 1  ? x-1 : x , y ] == 0
+		println((x-1)*10 + y , " is neutral - Up")
+		addCoordinate(coords,numToCoor((x-1)*10 + y))
+	end
+	if	board[ x , y+1 <= 19 ? y+1 : y ] == 0
+		println(x*10 + y+1 , " is neutral - Right")
+		addCoordinate(coords,numToCoor(x*10 + y+1))
+	end
+	if	board[ x , y-1 >= 1  ? y-1 : y ] == 0
+		println(x*10 + y-1 , " is neutral - Left")
+		addCoordinate(coords,numToCoor(x*10 + y-1))
+	end
+
+	return coords
 end
 
 # # # # # # # # # # # # # #		Reading Player Moves	# # # # # # # # # # # # # #
@@ -246,7 +307,7 @@ function getKomi(fileName)
 		c = hndLine[1][4:7]
 		komi = map(x-> (v = tryparse(Float64,x); isnull(v) ? 0.0 : get(v)),[c])
 		komi = komi[1]
-		println("Komi is: ",komi)
+		#println("Komi is: ",komi)
 		return komi
 	end
 
@@ -294,10 +355,10 @@ whiteMoves = getWhiteMoves(fileN)
 blackMoves = getBlackMoves(fileN)
 
 
-coordToBoard(board,hndCoords,player = 'W')
+coordToBoard(board,hndCoords,'W')
 IFP = getIFP(board, 'W')
 
-coordToBoard(board,hndCoords,player = 'B')
+coordToBoard(board,hndCoords,'B')
 
 play(board,CoorContainer(coor=numToCoor("12")),'W')
 coordToBoard(board,CoorContainer(coor=numToCoor("22")),'B')
