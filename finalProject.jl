@@ -170,7 +170,26 @@ function getBlackMoves(fileName)
 	return CoorCont
 end
 
+# # # # # # # # # # # # # #		Reading Komi			# # # # # # # # # # # # # #
 
+function getKomi(fileName)
+	file = open(fileName)
+	lines = readlines(file)
+	close(file)
+	
+	hndLine = filter(x -> contains(x, "KM"),lines) # Filtering komi line
+
+	# Reading komi in "[x.xx]" format
+	if hndLine[1][3] == '[' && hndLine[1][8] == ']'
+		c = hndLine[1][4:7]
+		komi = map(x-> (v = tryparse(Float64,x); isnull(v) ? 0.0 : get(v)),[c])
+		komi = komi[1]
+		println("Komi is: ",komi)
+		return komi
+	end
+
+	return "ERROR: Cannot read Komi"
+end
 
 
 # Open file
