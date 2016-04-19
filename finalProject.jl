@@ -20,6 +20,7 @@ end
 
 function play(board,coordinate,player)
 	
+	println(" * * * * * * * * * * * * * * * * * * * * * * * * * * *")
 	x = coordinate[1][1]
 	y = coordinate[1][2]
 	
@@ -43,7 +44,7 @@ function play(board,coordinate,player)
 	# Playing on a square that has PROBLEM!
 	println(player, " played on ", coorToLet(coordinate))
 			
-	nnn = getNonNeurtalNeigbours(board,coordinate)
+	nnn = getNonNeurtalNeigbours(board,coordinate[1])
 	coordToBoard(board,coordinate,player)
 
 	# Got through all Non Neurtal Neigbours
@@ -101,19 +102,19 @@ function findSurroundingFriends(board,coordinate,cntAll,cntChk)
 	x = getCoorX(coordinate)
 	y = getCoorY(coordinate)
 	
-	if	board[ x+1 <= 19 ? x+1 : x , y ] == playerNumbr && !(coordinate in cntAll)
+	if	(x+1 <= 19) && (board[ x+1 , y ] == playerNumbr) && !(coordinate in cntAll)
 		addCoordinate(cntAll,numToCoor(x+1 <= 19 ? x+1 : x,y))
 		addCoordinate(cntChk,numToCoor(x+1 <= 19 ? x+1 : x,y))
 	end
-	if	board[ x-1 >= 1  ? x-1 : x , y ] == playerNumbr && !(coordinate in cntAll)
+	if	(x-1 >= 1)  && (board[ x-1 , y ] == playerNumbr) && !(coordinate in cntAll)
 		addCoordinate(cntAll,numToCoor(x-1 >= 1  ? x-1 : x,y))
 		addCoordinate(cntChk,numToCoor(x-1 >= 1  ? x-1 : x,y))
 	end
-	if	board[ x , y+1 <= 19 ? y+1 : y ] == playerNumbr && !(coordinate in cntAll)
+	if	(y+1 <= 19) && (board[ x , y+1 ] == playerNumbr) && !(coordinate in cntAll)
 		addCoordinate(cntAll,numToCoor(x,y+1 <= 19 ? y+1 : y))
 		addCoordinate(cntChk,numToCoor(x,y+1 <= 19 ? y+1 : y))
 	end
-	if	board[ x , y-1 >= 1  ? y-1 : y ] == playerNumbr && !(coordinate in cntAll)
+	if	(y-1 >= 1)  && (board[ x , y-1 ] == playerNumbr) && !(coordinate in cntAll)
 		addCoordinate(cntAll,numToCoor(x,y-1 >= 1  ? y-1 : y))
 		addCoordinate(cntChk,numToCoor(x,y-1 >= 1  ? y-1 : y))
 	end
@@ -136,7 +137,7 @@ end
 
 function hasFriendNeighbour(board,coordinate)
 	nnn = getNonNeurtalNeigbours(board,coordinate)
-	player = getCoorPl(coordinate)
+	player = getCoorPl(board,coordinate)
 
 	# Got through all Non Neurtal Neigbours
 	for i=1:size(nnn)[1]
@@ -154,27 +155,25 @@ function getNonNeurtalNeigbours(board,coordinate)
 	coords = CoorContainer()
 
 	println("nnn curcoor ",coordinate)
-	for i = 1:size(coordinate)[1]
-		x = getCoorX(coordinate[i])
-		y = getCoorY(coordinate[i])
+	x = getCoorX(coordinate)
+	y = getCoorY(coordinate)
 		
-		println("Looking non-neutral neighbours of ", x*10 + y)
-		if	board[ x+1 <= 19 ? x+1 : x , y ] != 0
-			println("\t", (x+1)*10 + y , " is not neutral - Down")
-			addCoordinate(coords,numToCoor((x+1)*10 + y))
-		end
-		if	board[ x-1 >= 1  ? x-1 : x , y ] != 0
-			println("\t", (x-1)*10 + y , " is not neutral - Up")
-			addCoordinate(coords,numToCoor((x-1)*10 + y))
-		end
-		if	board[ x , y+1 <= 19 ? y+1 : y ] != 0
-			println("\t", x*10 + y+1 , " is not neutral - Right")
-			addCoordinate(coords,numToCoor(x*10 + y+1))
-		end
-		if	board[ x , y-1 >= 1  ? y-1 : y ] != 0
-			println("\t", x*10 + y-1 , " is not neutral - Left")
-			addCoordinate(coords,numToCoor(x*10 + y-1))
-		end
+	println("Looking non-neutral neighbours of ", x*10 + y)
+	if	(x+1 <= 19) && (board[ x+1 , y ] != 0)
+		println("\t", (x+1)*10 + y , " is not neutral - Down")
+		addCoordinate(coords,numToCoor((x+1)*10 + y))
+	end
+	if	(x-1 >= 1)  && (board[ x-1 , y ] != 0)
+		println("\t", (x-1)*10 + y , " is not neutral - Up")
+		addCoordinate(coords,numToCoor((x-1)*10 + y))
+	end
+	if	(y+1 <= 19) && (board[ x , y+1 ] != 0)
+		println("\t", x*10 + y+1 , " is not neutral - Right")
+		addCoordinate(coords,numToCoor(x*10 + y+1))
+	end
+	if	(y-1 >= 1)  && (board[ x , y-1 ] != 0)
+		println("\t", x*10 + y-1 , " is not neutral - Left")
+		addCoordinate(coords,numToCoor(x*10 + y-1))
 	end
 	return coords
 end
@@ -257,9 +256,9 @@ play(board,CoorContainer(coor=numToCoor("22")),'B')
 play(board,CoorContainer(coor=numToCoor("32")),'B')
 play(board,CoorContainer(coor=numToCoor("21")),'W')
 play(board,CoorContainer(coor=numToCoor("23")),'W')
-#play(board,CoorContainer(coor=numToCoor("31")),'W')
-#play(board,CoorContainer(coor=numToCoor("42")),'W')
-#play(board,CoorContainer(coor=numToCoor("33")),'W')
+play(board,CoorContainer(coor=numToCoor("31")),'W')
+play(board,CoorContainer(coor=numToCoor("42")),'W')
+play(board,CoorContainer(coor=numToCoor("33")),'W')
 
 writedlm("Documents/KnetAlphaGO/board.txt", board)
 #board2 = readdlm("Documents/KnetAlphaGO/test.txt")
