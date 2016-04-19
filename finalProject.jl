@@ -67,7 +67,8 @@ function isSurrounded(board,coordinate)
 	boo = recc(board,coordinate,friendsAll,friendsChk)
 	println("boo",boo)
 	if boo
-		println("Neutralizing",friendsAll)
+		println("Neutralizing friends & self ",friendsAll,coordinate)
+		addCoordinate(friendsAll,coordinate)
 		coordToBoard(board,friendsAll,'N')
 		return true	
 	end
@@ -88,7 +89,7 @@ function recc(board,coordinate,friendsAll,friendsChk)
 		println(size(friendsChk)[1])
 		println("fr",friendsChk)
 
-		recc(board,popCoordinate(friendsChk),friendsAll,friendsChk)
+		return recc(board,popCoordinate(friendsChk),friendsAll,friendsChk)
 	end
 
 	if isContEmpty(friendsChk)
@@ -120,22 +121,54 @@ function findSurroundingFriends(board,coordinate,cntAll,cntChk)
 	end
 end
 
-function hasLiberty(board,coordinate)
-	if hasFriendNeighbour(board,coordinate)
-		return true
-	end
-
+function hasLiberty(board,coordinate;knownFriends=CoorContainer())
 	nn = getNeurtalNeigbours(board,coordinate)
 	if !isContEmpty(nn)
 		println("\t",coordinate, " has ", size(nn)[1], " liberties")
 		return true
 	else
+		fn = getFriendNeighbours(board,coordinate)
+		println("fnsbd ",fn)
+		println("knf ",knownFriends)
+		# remove known friends from fn
+		if !isContEmpty(knownFriends)
+			for i=1:size(knownFriends)[1]
+				if knownFriends[i] in fn
+					delCoordinate(fn,coordinate)
+				end
+			end
+		end
+		println("fnsad ",fn)
+		# add new known friends when they are checked to knownFriends
+		if !isContEmpty(fn)  
+			for i=1:size(fn)[1]
+				addCoordinate(knownFriends,fn[i])
+				return hasLiberty(board,coordinate,knownFriends=knownFriends)
+			end
+		end
 		println("\t",coordinate, " has 0 liberties")
 		return false
 	end
 end
 
-function hasFriendNeighbour(board,coordinate)
+function getFriendNeighbours(board,coordinate)
+	nnn = getNonNeurtalNeigbours(board,coordinate)
+	player = getCoorPl(board,coordinate)
+	coords = CoorContainer()
+
+	# Got through all Non Neurtal Neigbours
+	for i=1:size(nnn)[1]
+		println("checking NNN for friends",nnn[i])
+		curCoor = numToCoor(nnn[i][1],nnn[i][2])
+		curPlyr = getCoorPl(board,curCoor)
+		if player == curPlyr
+			addCoordinate(coords,coordinate)
+		end
+	end
+	return coords
+end
+
+function hasFriendNeighbour(board,coordinate)  
 	nnn = getNonNeurtalNeigbours(board,coordinate)
 	player = getCoorPl(board,coordinate)
 
@@ -149,6 +182,7 @@ function hasFriendNeighbour(board,coordinate)
 		end
 	end
 	return false
+## Not used
 end
 
 function getNonNeurtalNeigbours(board,coordinate)
@@ -258,7 +292,9 @@ play(board,CoorContainer(coor=numToCoor("21")),'W')
 play(board,CoorContainer(coor=numToCoor("23")),'W')
 play(board,CoorContainer(coor=numToCoor("31")),'W')
 play(board,CoorContainer(coor=numToCoor("42")),'W')
-play(board,CoorContainer(coor=numToCoor("33")),'W')
+play(board,CoorContainer(coor=numToCoor("33")),'B')
+play(board,CoorContainer(coor=numToCoor("43")),'W')
+play(board,CoorContainer(coor=numToCoor("34")),'W')
 
 writedlm("Documents/KnetAlphaGO/board.txt", board)
 #board2 = readdlm("Documents/KnetAlphaGO/test.txt")

@@ -96,6 +96,10 @@ function addCoordinate(container,coordinate)
 	end
 end
 
+function delCoordinate(container,coordinate)
+	deleteat!(container, findfirst(container, coordinate))
+end
+
 function popCoordinate(container)
 	return pop!(container)
 end
