@@ -47,104 +47,36 @@ function play(board,coordinate,player)
 	nnn = getNonNeurtalNeigbours(board,coordinate[1])
 	coordToBoard(board,coordinate,player)
 
-	# Got through all Non Neurtal Neigbours
+	# Go through all Non Neurtal Neigbours
 	for i=1:size(nnn)[1]
 		println("checking NNN",nnn[i])
 		curCoor = numToCoor(nnn[i][1],nnn[i][2])
 		curPlyr = getCoorPl(board,curCoor)
-		if !hasLiberty(board,curCoor) && isSurrounded(board,curCoor)
-			#coordToBoard(board, CoorContainer(coor=curCoor), 'N')
-		end
+		hasLiberty(board,curCoor,neurtalize=true)
 	end
 end
 
-function isSurrounded(board,coordinate)
-	oppontNumbr = getOpponentNumber(getCoorPl(board,coordinate))
-
-	friendsAll = CoorContainer()
-	friendsChk = CoorContainer()
-	
-	boo = recc(board,coordinate,friendsAll,friendsChk)
-	println("boo",boo)
-	if boo
-		println("Neutralizing friends & self ",friendsAll,coordinate)
-		addCoordinate(friendsAll,coordinate)
-		coordToBoard(board,friendsAll,'N')
-		return true	
-	end
-	return false
-end
-
-function recc(board,coordinate,friendsAll,friendsChk)
-	println("co",coordinate)
-
-	if hasLiberty(board,coordinate,neurtalize=true)
-		return false
-	end
-
-	findSurroundingFriends(board,coordinate,friendsAll,friendsChk)
-
-	# Check if all friends are surronded too
-	if !isContEmpty(friendsChk)
-		println(size(friendsChk)[1])
-		println("fr",friendsChk)
-
-		return recc(board,popCoordinate(friendsChk),friendsAll,friendsChk)
-	end
-
-	if isContEmpty(friendsChk)
-		return true
-	end
-
-end
-
-function findSurroundingFriends(board,coordinate,cntAll,cntChk)
-	playerNumbr = getCoorPlNum(board,coordinate)
-	x = getCoorX(coordinate)
-	y = getCoorY(coordinate)
-	
-	if	(x+1 <= 19) && (board[ x+1 , y ] == playerNumbr) && !(coordinate in cntAll)
-		addCoordinate(cntAll,numToCoor(x+1 <= 19 ? x+1 : x,y))
-		addCoordinate(cntChk,numToCoor(x+1 <= 19 ? x+1 : x,y))
-	end
-	if	(x-1 >= 1)  && (board[ x-1 , y ] == playerNumbr) && !(coordinate in cntAll)
-		addCoordinate(cntAll,numToCoor(x-1 >= 1  ? x-1 : x,y))
-		addCoordinate(cntChk,numToCoor(x-1 >= 1  ? x-1 : x,y))
-	end
-	if	(y+1 <= 19) && (board[ x , y+1 ] == playerNumbr) && !(coordinate in cntAll)
-		addCoordinate(cntAll,numToCoor(x,y+1 <= 19 ? y+1 : y))
-		addCoordinate(cntChk,numToCoor(x,y+1 <= 19 ? y+1 : y))
-	end
-	if	(y-1 >= 1)  && (board[ x , y-1 ] == playerNumbr) && !(coordinate in cntAll)
-		addCoordinate(cntAll,numToCoor(x,y-1 >= 1  ? y-1 : y))
-		addCoordinate(cntChk,numToCoor(x,y-1 >= 1  ? y-1 : y))
-	end
-end
-
+# knownFriends	-> Just for recursion
+# neurtalize	-> If given coordinate has no liberty it and all of its friends become empty square
 function hasLiberty(board,coordinate;knownFriends=CoorContainer(),neurtalize=false)
 	nn = getNeurtalNeigbours(board,coordinate)
 	if !isContEmpty(nn)
 		println("\t",coordinate, " has ", size(nn)[1], " liberties")
 		return true
 	else
-		addCoordinate(knownFriends,coordinate)
+		#addCoordinate(knownFriends,coordinate)
 		fn = getFriendNeighbours(board,coordinate)
-		println("fnsbd of ",coordinate, " - ",fn)
-		println("knf ",knownFriends)
 		# remove known friends from fn
 		if !isContEmpty(knownFriends)
 			for i=1:size(knownFriends)[1]
 				if knownFriends[i] in fn
-					println("deleting coordinate " ,knownFriends[i])
 					delCoordinate(fn,knownFriends[i])
 				end
 			end
 		end
-		println("fnsad ",fn, !isContEmpty(fn))
 		# add new known friends when they are checked to knownFriends
 		if !isContEmpty(fn)  
 			for i=1:size(fn)[1]
-				println("adding friend " ,fn[i])
 				addCoordinate(knownFriends,fn[i])
 				if hasLiberty(board,fn[i],knownFriends=knownFriends)
 					return true
@@ -153,6 +85,7 @@ function hasLiberty(board,coordinate;knownFriends=CoorContainer(),neurtalize=fal
 		end
 		println("\t",coordinate, " has 0 liberties")
 		if neurtalize == true
+			println("Stones to be neutralized: ", knownFriends)
 			coordToBoard(board,knownFriends,'N')
 		end
 		return false
@@ -166,56 +99,38 @@ function getFriendNeighbours(board,coordinate)
 
 	# Got through all Non Neurtal Neigbours
 	for i=1:size(nnn)[1]
-		println("checking NNN for friends",nnn[i])
+		#println("checking NNN for friends",nnn[i])
 		curCoor = numToCoor(nnn[i][1],nnn[i][2])
 		curPlyr = getCoorPl(board,curCoor)
 		if player == curPlyr
-			println("friend found ", curCoor)
+			#println("friend found ", curCoor)
 			addCoordinate(coords,curCoor)
 		end
 	end
 	return coords
 end
 
-function hasFriendNeighbour(board,coordinate)  
-	nnn = getNonNeurtalNeigbours(board,coordinate)
-	player = getCoorPl(board,coordinate)
-
-	# Got through all Non Neurtal Neigbours
-	for i=1:size(nnn)[1]
-		println("checking NNN for friends",nnn[i])
-		curCoor = numToCoor(nnn[i][1],nnn[i][2])
-		curPlyr = getCoorPl(board,curCoor)
-		if player == curPlyr
-			return true
-		end
-	end
-	return false
-## Not used
-end
-
 function getNonNeurtalNeigbours(board,coordinate)
 	coords = CoorContainer()
 
-	println("nnn curcoor ",coordinate)
 	x = getCoorX(coordinate)
 	y = getCoorY(coordinate)
 		
-	println("Looking non-neutral neighbours of ", x*10 + y)
+	#println("Looking non-neutral neighbours of ", x*10 + y)
 	if	(x+1 <= 19) && (board[ x+1 , y ] != 0)
-		println("\t", (x+1)*10 + y , " is not neutral - Down")
+		#println("\t", (x+1)*10 + y , " is not neutral - Down")
 		addCoordinate(coords,numToCoor((x+1)*10 + y))
 	end
 	if	(x-1 >= 1)  && (board[ x-1 , y ] != 0)
-		println("\t", (x-1)*10 + y , " is not neutral - Up")
+		#println("\t", (x-1)*10 + y , " is not neutral - Up")
 		addCoordinate(coords,numToCoor((x-1)*10 + y))
 	end
 	if	(y+1 <= 19) && (board[ x , y+1 ] != 0)
-		println("\t", x*10 + y+1 , " is not neutral - Right")
+		#println("\t", x*10 + y+1 , " is not neutral - Right")
 		addCoordinate(coords,numToCoor(x*10 + y+1))
 	end
 	if	(y-1 >= 1)  && (board[ x , y-1 ] != 0)
-		println("\t", x*10 + y-1 , " is not neutral - Left")
+		#println("\t", x*10 + y-1 , " is not neutral - Left")
 		addCoordinate(coords,numToCoor(x*10 + y-1))
 	end
 	return coords
@@ -228,21 +143,21 @@ function getNeurtalNeigbours(board,coordinate)
 		x = getCoorX(coordinate)
 		y = getCoorY(coordinate)
 		
-		println("Looking neutral neighbours of ", (x*10) + y)
+		#println("Looking neutral neighbours of ", (x*10) + y)
 		if	board[ x+1 <= 19 ? x+1 : x , y ] == 0
-			println("\t",(x+1)*10 + y , " is neutral - Down")
+			#println("\t",(x+1)*10 + y , " is neutral - Down")
 			addCoordinate(coords,numToCoor((x+1)*10 + y))
 		end
 		if	board[ x-1 >= 1  ? x-1 : x , y ] == 0
-			println("\t",(x-1)*10 + y , " is neutral - Up")
+			#println("\t",(x-1)*10 + y , " is neutral - Up")
 			addCoordinate(coords,numToCoor((x-1)*10 + y))
 		end
 		if	board[ x , y+1 <= 19 ? y+1 : y ] == 0
-			println("\t",x*10 + y+1 , " is neutral - Right")
+			#println("\t",x*10 + y+1 , " is neutral - Right")
 			addCoordinate(coords,numToCoor(x*10 + y+1))
 		end
 		if	board[ x , y-1 >= 1  ? y-1 : y ] == 0
-			println("\t",x*10 + y-1 , " is neutral - Left")
+			#println("\t",x*10 + y-1 , " is neutral - Left")
 			addCoordinate(coords,numToCoor(x*10 + y-1))
 		end
 	end
@@ -294,19 +209,7 @@ IFP = getIFP(board, 'W')
 
 coordToBoard(board,hndCoords,'B')
 
-play(board,CoorContainer(coor=numToCoor("12")),'W')
-play(board,CoorContainer(coor=numToCoor("22")),'B')
-play(board,CoorContainer(coor=numToCoor("32")),'B')
-play(board,CoorContainer(coor=numToCoor("21")),'W')
-play(board,CoorContainer(coor=numToCoor("23")),'W')
-play(board,CoorContainer(coor=numToCoor("31")),'W')
-play(board,CoorContainer(coor=numToCoor("42")),'W')
-play(board,CoorContainer(coor=numToCoor("33")),'B')
-play(board,CoorContainer(coor=numToCoor("43")),'W')
-play(board,CoorContainer(coor=numToCoor("34")),'B')
-play(board,CoorContainer(coor=numToCoor("24")),'W')
-play(board,CoorContainer(coor=numToCoor("44")),'W')
-play(board,CoorContainer(coor=numToCoor("35")),'W')
+include("Tests/testl.jl")
 
 writedlm("Documents/KnetAlphaGO/board.txt", board)
 #board2 = readdlm("Documents/KnetAlphaGO/test.txt")
