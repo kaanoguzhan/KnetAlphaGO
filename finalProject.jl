@@ -35,64 +35,92 @@ function play(board,coordinate,player)
 		board[ x-1 >= 1  ? x-1 : x , y ] == 0 &&
 		board[ x , y+1 <= 19 ? y+1 : y ] == 0 &&
 		board[ x , y-1 >= 1  ? y-1 : y ] == 0
+			println(player, " played on ", coorToLet(coordinate))
 			coordToBoard(board,coordinate,player)
+			return
 	end
 
 	# Playing on a square that has PROBLEM!
-		getNonNeurtalNeigbours(board,coordinate)
+	println(player, " played on ", coorToLet(coordinate))
+			
+	nnn = getNonNeurtalNeigbours(board,coordinate)
+	coordToBoard(board,coordinate,player)
+	
+	# Got through all Non Neurtal Neigbours
+	for i=1:size(nnn)[1]
+		if !hasLiberty(board,numToCoor(nnn[i][1],nnn[i][2]))
+			println(player, " has prisoned ", getOpponent(player))
+			coordToBoard(board,CoorContainer(coor=numToCoor(nnn[i][1],nnn[i][2])),'N')
+		end
+	end
+end
 
+function hasLiberty(board,coordinate)
+	nn = getNeurtalNeigbours(board,coordinate)
+	println("\t",coordinate, " has ", size(nn)[1], " liberties")
+	if size(nn)[1] >= 1
+		return true
+	else
+		return false
+	end
 end
 
 function getNonNeurtalNeigbours(board,coordinate)
 	coords = CoorContainer()
-	x = coordinate[1][1]
-	y = coordinate[1][2]
-	
-	println("Looking non-neutral neighbours of ", x*10 + y)
-	if	board[ x+1 <= 19 ? x+1 : x , y ] != 0
-		println((x+1)*10 + y , " is not neutral - Down")
-		addCoordinate(coords,numToCoor((x+1)*10 + y))
-	end
-	if	board[ x-1 >= 1  ? x-1 : x , y ] != 0
-		println((x-1)*10 + y , " is not neutral - Up")
-		addCoordinate(coords,numToCoor((x-1)*10 + y))
-	end
-	if	board[ x , y+1 <= 19 ? y+1 : y ] != 0
-		println(x*10 + y+1 , " is not neutral - Right")
-		addCoordinate(coords,numToCoor(x*10 + y+1))
-	end
-	if	board[ x , y-1 >= 1  ? y-1 : y ] != 0
-		println(x*10 + y-1 , " is not neutral - Left")
-		addCoordinate(coords,numToCoor(x*10 + y-1))
+
+	for i = 1:size(coordinate)[1]
+		x = getCoorX(coordinate[i])
+		y = getCoorY(coordinate[i])
+		
+		println("Looking non-neutral neighbours of ", x*10 + y)
+		if	board[ x+1 <= 19 ? x+1 : x , y ] != 0
+			println("\t", (x+1)*10 + y , " is not neutral - Down")
+			addCoordinate(coords,numToCoor((x+1)*10 + y))
+		end
+		if	board[ x-1 >= 1  ? x-1 : x , y ] != 0
+			println("\t", (x-1)*10 + y , " is not neutral - Up")
+			addCoordinate(coords,numToCoor((x-1)*10 + y))
+		end
+		if	board[ x , y+1 <= 19 ? y+1 : y ] != 0
+			println("\t", x*10 + y+1 , " is not neutral - Right")
+			addCoordinate(coords,numToCoor(x*10 + y+1))
+		end
+		if	board[ x , y-1 >= 1  ? y-1 : y ] != 0
+			println("\t", x*10 + y-1 , " is not neutral - Left")
+			addCoordinate(coords,numToCoor(x*10 + y-1))
+		end
 	end
 
-	return coords
+	return coords[2:end]
 end
 
 function getNeurtalNeigbours(board,coordinate)
 	coords = CoorContainer()
-	x = coordinate[1][1]
-	y = coordinate[1][2]
-	
-	println("Looking neutral neighbours of ", x*10 + y)
-	if	board[ x+1 <= 19 ? x+1 : x , y ] == 0
-		println((x+1)*10 + y , " is neutral - Down")
-		addCoordinate(coords,numToCoor((x+1)*10 + y))
-	end
-	if	board[ x-1 >= 1  ? x-1 : x , y ] == 0
-		println((x-1)*10 + y , " is neutral - Up")
-		addCoordinate(coords,numToCoor((x-1)*10 + y))
-	end
-	if	board[ x , y+1 <= 19 ? y+1 : y ] == 0
-		println(x*10 + y+1 , " is neutral - Right")
-		addCoordinate(coords,numToCoor(x*10 + y+1))
-	end
-	if	board[ x , y-1 >= 1  ? y-1 : y ] == 0
-		println(x*10 + y-1 , " is neutral - Left")
-		addCoordinate(coords,numToCoor(x*10 + y-1))
+
+	for i=1:size(coordinate)[1]
+		x = getCoorX(coordinate)
+		y = getCoorY(coordinate)
+		
+		println("Looking neutral neighbours of ", (x*10) + y)
+		if	board[ x+1 <= 19 ? x+1 : x , y ] == 0
+			println("\t",(x+1)*10 + y , " is neutral - Down")
+			addCoordinate(coords,numToCoor((x+1)*10 + y))
+		end
+		if	board[ x-1 >= 1  ? x-1 : x , y ] == 0
+			println("\t",(x-1)*10 + y , " is neutral - Up")
+			addCoordinate(coords,numToCoor((x-1)*10 + y))
+		end
+		if	board[ x , y+1 <= 19 ? y+1 : y ] == 0
+			println("\t",x*10 + y+1 , " is neutral - Right")
+			addCoordinate(coords,numToCoor(x*10 + y+1))
+		end
+		if	board[ x , y-1 >= 1  ? y-1 : y ] == 0
+			println("\t",x*10 + y-1 , " is neutral - Left")
+			addCoordinate(coords,numToCoor(x*10 + y-1))
+		end
 	end
 
-	return coords
+	return coords[2:end]
 end
 
 
@@ -129,8 +157,6 @@ fileN = "Documents/KnetAlphaGO/Dataset/2015-05-01-3.sgf"
 # Generate 19x19 board
 board = zeros(19,19)
 
-
-
 hndCoords = getHandicapCoordinates(fileN)
 
 whiteMoves = getWhiteMoves(fileN)
@@ -143,7 +169,7 @@ IFP = getIFP(board, 'W')
 coordToBoard(board,hndCoords,'B')
 
 play(board,CoorContainer(coor=numToCoor("12")),'W')
-coordToBoard(board,CoorContainer(coor=numToCoor("22")),'B')
+play(board,CoorContainer(coor=numToCoor("22")),'B')
 play(board,CoorContainer(coor=numToCoor("32")),'W')
 play(board,CoorContainer(coor=numToCoor("21")),'W')
 play(board,CoorContainer(coor=numToCoor("23")),'W')

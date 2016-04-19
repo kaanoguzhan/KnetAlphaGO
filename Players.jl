@@ -5,6 +5,8 @@ function getPlayerNumber(player)
 		return 1
 	elseif player == 'W'
 		return 2
+	elseif player == 'N'
+		return 0
 	end
 end
 
@@ -13,6 +15,14 @@ function getOpponentNumber(player)
 		return 2
 	elseif player == 'W'
 		return 1
+	end
+end
+
+function getOpponent(player)
+	if player == 'B' 
+		return 'W'
+	elseif player == 'W'
+		return 'B'
 	end
 end
 
