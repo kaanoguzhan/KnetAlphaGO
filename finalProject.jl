@@ -78,7 +78,7 @@ end
 function recc(board,coordinate,friendsAll,friendsChk)
 	println("co",coordinate)
 
-	if hasLiberty(board,coordinate)
+	if hasLiberty(board,coordinate,neurtalize=true)
 		return false
 	end
 
@@ -121,32 +121,40 @@ function findSurroundingFriends(board,coordinate,cntAll,cntChk)
 	end
 end
 
-function hasLiberty(board,coordinate;knownFriends=CoorContainer())
+function hasLiberty(board,coordinate;knownFriends=CoorContainer(),neurtalize=false)
 	nn = getNeurtalNeigbours(board,coordinate)
 	if !isContEmpty(nn)
 		println("\t",coordinate, " has ", size(nn)[1], " liberties")
 		return true
 	else
+		addCoordinate(knownFriends,coordinate)
 		fn = getFriendNeighbours(board,coordinate)
-		println("fnsbd ",fn)
+		println("fnsbd of ",coordinate, " - ",fn)
 		println("knf ",knownFriends)
 		# remove known friends from fn
 		if !isContEmpty(knownFriends)
 			for i=1:size(knownFriends)[1]
 				if knownFriends[i] in fn
-					delCoordinate(fn,coordinate)
+					println("deleting coordinate " ,knownFriends[i])
+					delCoordinate(fn,knownFriends[i])
 				end
 			end
 		end
-		println("fnsad ",fn)
+		println("fnsad ",fn, !isContEmpty(fn))
 		# add new known friends when they are checked to knownFriends
 		if !isContEmpty(fn)  
 			for i=1:size(fn)[1]
+				println("adding friend " ,fn[i])
 				addCoordinate(knownFriends,fn[i])
-				return hasLiberty(board,coordinate,knownFriends=knownFriends)
+				if hasLiberty(board,fn[i],knownFriends=knownFriends)
+					return true
+				end
 			end
 		end
 		println("\t",coordinate, " has 0 liberties")
+		if neurtalize == true
+			coordToBoard(board,knownFriends,'N')
+		end
 		return false
 	end
 end
@@ -162,7 +170,8 @@ function getFriendNeighbours(board,coordinate)
 		curCoor = numToCoor(nnn[i][1],nnn[i][2])
 		curPlyr = getCoorPl(board,curCoor)
 		if player == curPlyr
-			addCoordinate(coords,coordinate)
+			println("friend found ", curCoor)
+			addCoordinate(coords,curCoor)
 		end
 	end
 	return coords
@@ -294,7 +303,10 @@ play(board,CoorContainer(coor=numToCoor("31")),'W')
 play(board,CoorContainer(coor=numToCoor("42")),'W')
 play(board,CoorContainer(coor=numToCoor("33")),'B')
 play(board,CoorContainer(coor=numToCoor("43")),'W')
-play(board,CoorContainer(coor=numToCoor("34")),'W')
+play(board,CoorContainer(coor=numToCoor("34")),'B')
+play(board,CoorContainer(coor=numToCoor("24")),'W')
+play(board,CoorContainer(coor=numToCoor("44")),'W')
+play(board,CoorContainer(coor=numToCoor("35")),'W')
 
 writedlm("Documents/KnetAlphaGO/board.txt", board)
 #board2 = readdlm("Documents/KnetAlphaGO/test.txt")
