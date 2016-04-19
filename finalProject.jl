@@ -45,29 +45,115 @@ function play(board,coordinate,player)
 			
 	nnn = getNonNeurtalNeigbours(board,coordinate)
 	coordToBoard(board,coordinate,player)
-	
+
 	# Got through all Non Neurtal Neigbours
 	for i=1:size(nnn)[1]
-		if !hasLiberty(board,numToCoor(nnn[i][1],nnn[i][2]))
-			println(player, " has prisoned ", getOpponent(player))
-			coordToBoard(board,CoorContainer(coor=numToCoor(nnn[i][1],nnn[i][2])),'N')
+		println("checking NNN",nnn[i])
+		curCoor = numToCoor(nnn[i][1],nnn[i][2])
+		curPlyr = getCoorPl(board,curCoor)
+		if !hasLiberty(board,curCoor) && isSurrounded(board,curCoor)
+			#coordToBoard(board, CoorContainer(coor=curCoor), 'N')
 		end
 	end
 end
 
-function hasLiberty(board,coordinate)
-	nn = getNeurtalNeigbours(board,coordinate)
-	println("\t",coordinate, " has ", size(nn)[1], " liberties")
-	if size(nn)[1] >= 1
-		return true
-	else
+function isSurrounded(board,coordinate)
+	oppontNumbr = getOpponentNumber(getCoorPl(board,coordinate))
+
+	friendsAll = CoorContainer()
+	friendsChk = CoorContainer()
+	
+	boo = recc(board,coordinate,friendsAll,friendsChk)
+	println("boo",boo)
+	if boo
+		println("Neutralizing",friendsAll)
+		coordToBoard(board,friendsAll,'N')
+		return true	
+	end
+	return false
+end
+
+function recc(board,coordinate,friendsAll,friendsChk)
+	println("co",coordinate)
+
+	if hasLiberty(board,coordinate)
 		return false
 	end
+
+	findSurroundingFriends(board,coordinate,friendsAll,friendsChk)
+
+	# Check if all friends are surronded too
+	if !isContEmpty(friendsChk)
+		println(size(friendsChk)[1])
+		println("fr",friendsChk)
+
+		recc(board,popCoordinate(friendsChk),friendsAll,friendsChk)
+	end
+
+	if isContEmpty(friendsChk)
+		return true
+	end
+
+end
+
+function findSurroundingFriends(board,coordinate,cntAll,cntChk)
+	playerNumbr = getCoorPlNum(board,coordinate)
+	x = getCoorX(coordinate)
+	y = getCoorY(coordinate)
+	
+	if	board[ x+1 <= 19 ? x+1 : x , y ] == playerNumbr && !(coordinate in cntAll)
+		addCoordinate(cntAll,numToCoor(x+1 <= 19 ? x+1 : x,y))
+		addCoordinate(cntChk,numToCoor(x+1 <= 19 ? x+1 : x,y))
+	end
+	if	board[ x-1 >= 1  ? x-1 : x , y ] == playerNumbr && !(coordinate in cntAll)
+		addCoordinate(cntAll,numToCoor(x-1 >= 1  ? x-1 : x,y))
+		addCoordinate(cntChk,numToCoor(x-1 >= 1  ? x-1 : x,y))
+	end
+	if	board[ x , y+1 <= 19 ? y+1 : y ] == playerNumbr && !(coordinate in cntAll)
+		addCoordinate(cntAll,numToCoor(x,y+1 <= 19 ? y+1 : y))
+		addCoordinate(cntChk,numToCoor(x,y+1 <= 19 ? y+1 : y))
+	end
+	if	board[ x , y-1 >= 1  ? y-1 : y ] == playerNumbr && !(coordinate in cntAll)
+		addCoordinate(cntAll,numToCoor(x,y-1 >= 1  ? y-1 : y))
+		addCoordinate(cntChk,numToCoor(x,y-1 >= 1  ? y-1 : y))
+	end
+end
+
+function hasLiberty(board,coordinate)
+	if hasFriendNeighbour(board,coordinate)
+		return true
+	end
+
+	nn = getNeurtalNeigbours(board,coordinate)
+	if !isContEmpty(nn)
+		println("\t",coordinate, " has ", size(nn)[1], " liberties")
+		return true
+	else
+		println("\t",coordinate, " has 0 liberties")
+		return false
+	end
+end
+
+function hasFriendNeighbour(board,coordinate)
+	nnn = getNonNeurtalNeigbours(board,coordinate)
+	player = getCoorPl(coordinate)
+
+	# Got through all Non Neurtal Neigbours
+	for i=1:size(nnn)[1]
+		println("checking NNN for friends",nnn[i])
+		curCoor = numToCoor(nnn[i][1],nnn[i][2])
+		curPlyr = getCoorPl(board,curCoor)
+		if player == curPlyr
+			return true
+		end
+	end
+	return false
 end
 
 function getNonNeurtalNeigbours(board,coordinate)
 	coords = CoorContainer()
 
+	println("nnn curcoor ",coordinate)
 	for i = 1:size(coordinate)[1]
 		x = getCoorX(coordinate[i])
 		y = getCoorY(coordinate[i])
@@ -90,8 +176,7 @@ function getNonNeurtalNeigbours(board,coordinate)
 			addCoordinate(coords,numToCoor(x*10 + y-1))
 		end
 	end
-
-	return coords[2:end]
+	return coords
 end
 
 function getNeurtalNeigbours(board,coordinate)
@@ -120,7 +205,7 @@ function getNeurtalNeigbours(board,coordinate)
 		end
 	end
 
-	return coords[2:end]
+	return coords
 end
 
 
@@ -162,7 +247,6 @@ hndCoords = getHandicapCoordinates(fileN)
 whiteMoves = getWhiteMoves(fileN)
 blackMoves = getBlackMoves(fileN)
 
-
 coordToBoard(board,hndCoords,'W')
 IFP = getIFP(board, 'W')
 
@@ -170,9 +254,12 @@ coordToBoard(board,hndCoords,'B')
 
 play(board,CoorContainer(coor=numToCoor("12")),'W')
 play(board,CoorContainer(coor=numToCoor("22")),'B')
-play(board,CoorContainer(coor=numToCoor("32")),'W')
+play(board,CoorContainer(coor=numToCoor("32")),'B')
 play(board,CoorContainer(coor=numToCoor("21")),'W')
 play(board,CoorContainer(coor=numToCoor("23")),'W')
+#play(board,CoorContainer(coor=numToCoor("31")),'W')
+#play(board,CoorContainer(coor=numToCoor("42")),'W')
+#play(board,CoorContainer(coor=numToCoor("33")),'W')
 
 writedlm("Documents/KnetAlphaGO/board.txt", board)
 #board2 = readdlm("Documents/KnetAlphaGO/test.txt")

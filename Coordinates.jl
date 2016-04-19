@@ -63,7 +63,20 @@ function getCoorY(coordinate)
 	return coordinate[2]
 end
 
+function getCoorPl(board,coordinate)
+	playerNumber = Int(board[coordinate[1],coordinate[2]])
+	if playerNumber == 1 
+		return 'B'
+	elseif playerNumber == 2
+		return 'W'
+	elseif playerNumber == 0
+		return 'N'	
+	end
+end
 
+function getCoorPlNum(board,coordinate)
+	return Int(board[coordinate[1],coordinate[2]])
+end
 
 # Empty Coordinate container
 function CoorContainer(;coor=map(x -> Int(x),zeros(1,2)))
@@ -76,7 +89,27 @@ end
 
 # Adding coordinate to given container
 function addCoordinate(container,coordinate)
-	push!(container,coordinate)
+	if container[1][1] == 0 && container[1][2] == 0
+		container[1] = coordinate
+	else
+		push!(container,coordinate)
+	end
+end
+
+function popCoordinate(container)
+	return pop!(container)
+end
+
+function isContEmpty(container)
+	if size(container)[1] == 0 
+		return true
+	end
+	
+	if container[1][1] == 0 && container[1][2] == 0
+		return true
+	else
+		return false
+	end
 end
 
 # Empty coordinate for when a player decides a Pass turn
