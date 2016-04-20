@@ -120,3 +120,98 @@ end
 function passCoordinate()
 	map(x -> Int(x),zeros(1,2))
 end
+
+
+type Coordinate
+	x::Int64
+	y::Int64
+
+	numToCoor::Function
+	getCoorStr::Function
+	getCoorInt::Function
+
+	function Coordinate(coords)
+		this = new()
+		
+		if typeof(coords) == ASCIIString	# coords are givena as String {"xy"}
+			this.x = Int(coords[1])-48
+			this.y = Int(coords[2])-48
+		elseif typeof(coords) == Int64		# coords are givena as Int64 {xy}
+			this.x = Int((coords - (coords%10)) / 10)
+			this.y = Int(coords%10)
+		else
+			this.x = 0						# Initialize for default when coords
+			this.y = 0						# type is unknown
+			println("Unknown coordinate initialization")
+		end
+
+
+		this.numToCoor = function(string::ASCIIString)
+			this.x = Int(string[1])-48
+			this.y = Int(string[2])-48
+		end
+
+		this.getCoorStr = function()
+			return  string(this.x) * string(this.y)
+		end
+
+		this.getCoorInt = function()
+			return (this.x*10)+this.y
+		end 
+
+		return this
+	end
+
+	function Coordinate(coord1,coord2)
+		x = ""
+		if typeof(coord1) == ASCIIString
+			x = coord1
+		elseif typeof(coord1) == Int64
+			x = string(coord1)
+		end
+
+		y = ""
+		if typeof(coord2) == ASCIIString
+			y = coord2
+		elseif typeof(coord2) == Int64
+			y = string(coord2)
+		end
+
+		return Coordinate(x*y)
+	end
+end
+
+type CoorContainerN
+	contt::Array{Coordinate,1}
+
+	add::Function
+	pop::Function
+	isEmpty::Function
+
+	function CoorContainerN()
+		this = new()
+		this.contt = [Coordinate(00)]
+
+		this.add = function(coor)
+			if this.contt[1].x == 0 && this.contt[1].y == 0
+				this.contt[1] = coor
+			else
+				push!(this.contt,coor)
+			end
+		end
+
+		this.pop = function()
+			pop!(this.contt)
+		end
+
+		this.isEmpty = function()
+			if contt[1].x == 0 && contt[1].y == 0
+				return true
+			else
+				return false
+			end
+		end
+
+		return this
+	end
+end 

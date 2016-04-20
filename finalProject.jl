@@ -207,17 +207,21 @@ fileN = "Documents/KnetAlphaGO/Dataset/2015-05-01-3.sgf"
 # Generate 19x19 board
 board = zeros(19,19)
 
-hndCoords = getHandicapCoordinates(fileN)
+hndCoords	= getHandicapCoordinates(fileN)
+whiteMoves	= getWhiteMoves(fileN)
+blackMoves	= getBlackMoves(fileN)
+strtnPlayer = getStartingPlayer(fileN)
 
-whiteMoves = getWhiteMoves(fileN)
-blackMoves = getBlackMoves(fileN)
-
-coordToBoard(board,hndCoords,'W')
 IFP = getIFP(board, 'W')
 
-coordToBoard(board,hndCoords,'B')
 
 include("Tests/testl.jl")
 
 writedlm("Documents/KnetAlphaGO/board.txt", board)
 #board2 = readdlm("Documents/KnetAlphaGO/test.txt")
+
+cnt = CoorContainerN()
+coo = Coordinate(2,6)
+cnt.add(coo)
+
+println("nc",coo.getCoorStr())
