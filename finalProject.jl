@@ -192,6 +192,14 @@ function getIFP(board, player)
 	return IFP
 end
 
+function getStartingPlayer(fileName)
+	file = open(fileName)
+	lines = readlines(file)
+	close(file)
+
+	hnCoor = filter(x -> contains(x, ";"),lines)[2][2] # Filtering ;
+
+end
 
 # Open file
 fileN = "Documents/KnetAlphaGO/Dataset/2015-05-01-3.sgf"
