@@ -64,7 +64,7 @@ function getCoorY(coordinate)
 end
 
 function getCoorPl(board,coordinate)
-	playerNumber = Int(board[coordinate[1],coordinate[2]])
+	playerNumber = Int(board[coordinate.x,coordinate.y])
 	if playerNumber == 1 
 		return 'B'
 	elseif playerNumber == 2
@@ -75,7 +75,7 @@ function getCoorPl(board,coordinate)
 end
 
 function getCoorPlNum(board,coordinate)
-	return Int(board[coordinate[1],coordinate[2]])
+	return Int(board[coordinate.x,coordinate.y])
 end
 
 # Empty Coordinate container
@@ -186,7 +186,10 @@ type CoorContainerN
 
 	add::Function
 	pop::Function
+	remove::Function
 	isEmpty::Function
+	getSize::Function
+	getCoordinate::Function
 
 	function CoorContainerN()
 		this = new()
@@ -204,12 +207,24 @@ type CoorContainerN
 			pop!(this.contt)
 		end
 
+		this.remove = function(Coordinate::coor)
+			delCoordinate(this.contt,coor)
+		end
+
 		this.isEmpty = function()
-			if contt[1].x == 0 && contt[1].y == 0
+			if this.contt[1].x == 0 && this.contt[1].y == 0
 				return true
 			else
 				return false
 			end
+		end
+
+		this.getSize = function()
+			return size(this.contt)[1]
+		end
+
+		this.getCoordinate = function(i::Int64)
+			return this.contt[i]
 		end
 
 		return this
