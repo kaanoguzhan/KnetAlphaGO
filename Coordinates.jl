@@ -188,6 +188,7 @@ type CoorContainerN
 	pop::Function
 	remove::Function
 	isEmpty::Function
+	contains::Function
 	getSize::Function
 	getCoordinate::Function
 
@@ -207,16 +208,35 @@ type CoorContainerN
 			pop!(this.contt)
 		end
 
-		this.remove = function(Coordinate::coor)
-			delCoordinate(this.contt,coor)
+		this.remove = function(Coor::Coordinate)
+			for i=1 : size(this.contt)[1]					
+				println(i)
+				println(this.contt)
+				if this.contt[i].x == Coor.x && this.contt[i].y == Coor.y  	
+
+					deleteat!(this.contt, i)
+					break
+				end
+			end
 		end
 
 		this.isEmpty = function()
-			if this.contt[1].x == 0 && this.contt[1].y == 0
+			if size(this.contt)[1] == 0 && 	this.contt[1].x == 0 && this.contt[1].y == 0
 				return true
 			else
 				return false
 			end
+		end
+
+		this.contains = function(Coor::Coordinate)
+			println(Coor," * * * * * * *",size(this.contt)[1])
+			println(this.contt,"- - - - - - - -\n")
+			for i=1 : size(this.contt)[1]
+				if this.contt[i].x == Coor.x && this.contt[i].y == Coor.y
+					return true
+				end
+			end
+			return false
 		end
 
 		this.getSize = function()

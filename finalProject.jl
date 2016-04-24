@@ -7,13 +7,15 @@ include("SGFReaders.jl")
 # player = W -> Place white stone to coordinate(s)
 # player = B -> Place black stone to coordinate(s)
 function coordToBoard(board,coords,player)
-
+	println("at least")
 	if typeof(coords) == Coordinate
 		board[coords.x,coords.y] = getPlayerNumber(player)
 	elseif typeof(coords) == CoorContainerN
 		for i = 1 : coords.getsize()
+			println(coords)
 			if coords.x != 0 && coords.y != 0
-				board[coords.x,coords.y] = getPlayerNumber(player)
+			println("hii")
+				board[coords[i].x,coords[i].y] = getPlayerNumber(player)
 			end
 		end
 	end
@@ -66,24 +68,29 @@ function hasLiberty(board,coordinate;knownFriends=CoorContainerN(),neurtalize=fa
 		#addCoordinate(knownFriends,coordinate)
 		fn = getFriendNeighbours(board,coordinate)
 		# remove known friends from fn
+		#println("a")
 		if !knownFriends.isEmpty()
+		#println("b")
 			for i=1:knownFriends.getSize()
-				if knownFriends[i] in fn
-					fn.remove(knownFriends[i])
+				if fn.contains(knownFriends.getCoordinate(i))
+					println("2")
+					fn.remove(knownFriends.getCoordinate(i))
 				end
 			end
 		end
+println("yepu")
 		# add new known friends when they are checked to knownFriends
 		if !fn.isEmpty() 
 			for i=1:fn.getSize()
 				knownFriends.add(fn.getCoordinate(i))
 				if hasLiberty(board,fn.getCoordinate(i),knownFriends=knownFriends)
+					println("yep")
 					return true
 				end
 			end
 		end
 		println("\t",coordinate, " has 0 liberties")
-		if neurtalize == true
+		if neurtalize == true 
 			println("Stones to be neutralized: ", knownFriends)
 			coordToBoard(board,knownFriends,'N')
 		end
@@ -138,24 +145,23 @@ end
 function getNeurtalNeigbours(board,coordinate)
 	coords = CoorContainerN()
 
-
 	x = coordinate.x
 	y = coordinate.y
 		
-	#println("Looking neutral neighbours of ", (x*10) + y)
-	if	board[ x+1 <= 19 ? x+1 : x , y ] == 0
+	println("Looking neutral neighbours of ", (x*10) + y)
+	if	(x+1 <= 19) && (board[ x+1 , y ] == 0)
 		#println("\t",(x+1)*10 + y , " is neutral - Down")
 		coords.add(Coordinate((x+1)*10 + y))
 	end
-	if	board[ x-1 >= 1  ? x-1 : x , y ] == 0
+	if	(x-1 >= 1)  && (board[ x-1 , y ] == 0)
 		#println("\t",(x-1)*10 + y , " is neutral - Up")
 		coords.add(Coordinate((x-1)*10 + y))
 	end
-	if	board[ x , y+1 <= 19 ? y+1 : y ] == 0
+	if	(y+1 <= 19) && (board[ x , y+1 ] == 0)
 		#println("\t",x*10 + y+1 , " is neutral - Right")
 		coords.add(Coordinate(x*10 + y+1))
 	end
-	if	board[ x , y-1 >= 1  ? y-1 : y ] == 0
+	if	(y-1 >= 1)  && (board[ x , y-1 ] == 0)
 		#println("\t",x*10 + y-1 , " is neutral - Left")
 		coords.add(Coordinate(x*10 + y-1))
 	end
@@ -217,9 +223,3 @@ include("Tests/testl.jl")
 
 writedlm("Documents/KnetAlphaGO/board.txt", board)
 #board2 = readdlm("Documents/KnetAlphaGO/test.txt")
-
-cnt = CoorContainerN()
-coo = Coordinate(2,6)
-cnt.add(coo)
-
-println("nc",coo.getCoorStr())
