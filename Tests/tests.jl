@@ -1,13 +1,21 @@
 # Small game simulation
-play(board,CoorContainer(coor=numToCoor("12")),'W')
-play(board,CoorContainer(coor=numToCoor("21")),'W')
-play(board,CoorContainer(coor=numToCoor("22")),'B')
-play(board,CoorContainer(coor=numToCoor("23")),'W')
-play(board,CoorContainer(coor=numToCoor("31")),'W')
-play(board,CoorContainer(coor=numToCoor("32")),'B')
-play(board,CoorContainer(coor=numToCoor("33")),'B')
-play(board,CoorContainer(coor=numToCoor("42")),'W')
-play(board,CoorContainer(coor=numToCoor("43")),'W')
+IFP = play(nothing,board,CoorContainer(coor=numToCoor("12")),'W',initIFP=true)
+IFP = play(IFP,board,CoorContainer(coor=numToCoor("21")),'W')
+IFP = play(IFP,board,CoorContainer(coor=numToCoor("22")),'B')
+IFP = play(IFP,board,CoorContainer(coor=numToCoor("23")),'W')
+IFP = play(IFP,board,CoorContainer(coor=numToCoor("31")),'W')
+IFP = play(IFP,board,CoorContainer(coor=numToCoor("32")),'B')
+IFP = play(IFP,board,CoorContainer(coor=numToCoor("33")),'B')
+IFP = play(IFP,board,CoorContainer(coor=numToCoor("42")),'W')
+IFP = play(IFP,board,CoorContainer(coor=numToCoor("43")),'W')
 
 
-play(board,CoorContainer(coor=numToCoor("34")),'W')
+IFP = play(IFP,board,CoorContainer(coor=numToCoor("34")),'W')
+
+
+s=[]
+push!(s,IFP)
+push!(s,IFP)
+push!(s,IFP)
+push!(s,IFP)
+push!(s,IFP)

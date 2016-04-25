@@ -18,12 +18,14 @@ function coordToBoard(board,coords,player)
 	end
 end
 
-function play(board,coordinate,player)
-	
+function play(IFP,board,coordinate,player;initIFP=false)
+	if initIFP
+		IFP = zeros(19,19,48)	# Initialization of empty Input feature plane
+	end
+
 	println(" * * * * * * * * * * * * * * * * * * * * * * * * * * *")
 	x = coordinate[1][1]
 	y = coordinate[1][2]
-	
 	plNum = getPlayerNumber(player)
 
 	# Check if move is played on a neutral square
@@ -38,7 +40,8 @@ function play(board,coordinate,player)
 		board[ x , y-1 >= 1  ? y-1 : y ] == 0
 			println(player, " played on ", coorToLet(coordinate))
 			coordToBoard(board,coordinate,player)
-			return
+			writedlm("board.txt", board)
+			return updateIFP(IFP,board,coordinate,player)
 	end
 
 	# Playing on a square that has PROBLEM!
@@ -54,6 +57,9 @@ function play(board,coordinate,player)
 		curPlyr = getCoorPl(board,curCoor)
 		hasLiberty(board,curCoor,neurtalize=true)
 	end
+
+	writedlm("board.txt", board)
+	return updateIFP(IFP,board,coordinate,player)
 end
 
 # knownFriends	-> Just for recursion
@@ -144,19 +150,19 @@ function getNeurtalNeigbours(board,coordinate)
 		y = getCoorY(coordinate)
 		
 		#println("Looking neutral neighbours of ", (x*10) + y)
-		if	board[ x+1 <= 19 ? x+1 : x , y ] == 0
+		if	(x+1 <= 19) && (board[ x+1 , y ] == 0)
 			#println("\t",(x+1)*10 + y , " is neutral - Down")
 			addCoordinate(coords,numToCoor((x+1)*10 + y))
 		end
-		if	board[ x-1 >= 1  ? x-1 : x , y ] == 0
+		if	(x-1 >= 1)  && (board[ x-1 , y ] == 0)
 			#println("\t",(x-1)*10 + y , " is neutral - Up")
 			addCoordinate(coords,numToCoor((x-1)*10 + y))
 		end
-		if	board[ x , y+1 <= 19 ? y+1 : y ] == 0
+		if	(y+1 <= 19) && (board[ x , y+1 ] == 0)
 			#println("\t",x*10 + y+1 , " is neutral - Right")
 			addCoordinate(coords,numToCoor(x*10 + y+1))
 		end
-		if	board[ x , y-1 >= 1  ? y-1 : y ] == 0
+		if	(y-1 >= 1)  && (board[ x , y-1 ] == 0)
 			#println("\t",x*10 + y-1 , " is neutral - Left")
 			addCoordinate(coords,numToCoor(x*10 + y-1))
 		end
@@ -168,8 +174,9 @@ end
 
 # # # # # # # # # # # # # #		Input feature plane			# # # # # # # # # # # # # #
 
-function getIFP(board, player)
-	IFP = zeros(19,19,48)	# Initialize empty Input feature plane
+
+function updateIFP(IFPold, board, coordinate, player)
+	IFP = zeros(19,19,48)	# Empty Input feature plane for return
 
 	ply = getPlayerNumber(player)
 	opp = getOpponentNumber(player)
@@ -187,7 +194,31 @@ function getIFP(board, player)
 	# 4		Ones
 	IFP[:,:,4] = map(x -> 1,board)
 
-	# 5		Turns Since
+	# 5		Turns Since - 1
+	IFP[:,:,5] = IFPold[:,:,6]
+	
+	# 6		Turns Since - 2
+	IFP[:,:,6] = IFPold[:,:,7]
+	
+	# 7		Turns Since - 3
+	IFP[:,:,7] = IFPold[:,:,8]
+	
+	# 8		Turns Since - 4
+	IFP[:,:,8] = IFPold[:,:,9]
+	
+	# 9		Turns Since - 5
+	IFP[:,:,9] = IFPold[:,:,10]
+	
+	# 10	Turns Since - 6
+	IFP[:,:,10] = IFPold[:,:,11]
+	
+	# 11	Turns Since - 7
+	IFP[:,:,11] = IFPold[:,:,12]
+	
+	# 12	Turns Since - 8
+	x = coordinate[1][1]
+	y = coordinate[1][2]	
+	IFP[:,:,12][x,y] = 2.0
 
 	return IFP
 end
@@ -202,22 +233,21 @@ function getStartingPlayer(fileName)
 end
 
 # Open file
-fileN = "Documents/KnetAlphaGO/Dataset/2015-05-01-3.sgf"
+fileN = "Dataset/2015-05-01-3.sgf"
 
 # Generate 19x19 board
-board = zeros(19,19)
+board = zeros(19,19)	# Initialization of empty board
+
 
 hndCoords = getHandicapCoordinates(fileN)
 
 whiteMoves = getWhiteMoves(fileN)
 blackMoves = getBlackMoves(fileN)
 
-coordToBoard(board,hndCoords,'W')
-IFP = getIFP(board, 'W')
 
-coordToBoard(board,hndCoords,'B')
 
-include("Tests/testl.jl")
+include("Tests/tests.jl")
 
-writedlm("Documents/KnetAlphaGO/board.txt", board)
-#board2 = readdlm("Documents/KnetAlphaGO/test.txt")
+
+println("Done")
+
