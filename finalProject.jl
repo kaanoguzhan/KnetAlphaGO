@@ -241,6 +241,10 @@ println("Starting game")
 # Generate 19x19 board
 board = zeros(19,19)	# Initialization of empty board
 
+# Empty array for holding each turns IFP and corresponding move
+IFP_ar = []
+Mov_ar = []
+
 # Placing handicaps to board
 hndCoords = getHandicapCoordinates(fileN)
 coordToBoard(board,hndCoords,'B')
@@ -256,6 +260,8 @@ WCurrTurn = 2
 BCurrTurn = 1
 # First turn of White
 IFP = play(nothing,board,CoorContainer(coor=whiteMoves[1]),'W',initIFP=true)
+push!(IFP_ar, IFP)
+push!(Mov_ar, whiteMoves[1])
 # Rest of the turns
 while WTotalTurn > WCurrTurn || BTotalTurn > BCurrTurn
 	# White always plays first
@@ -263,6 +269,8 @@ while WTotalTurn > WCurrTurn || BTotalTurn > BCurrTurn
 	if BTotalTurn > BCurrTurn
 		println("BM",blackMoves[BCurrTurn])
 		IFP = play(IFP,board,CoorContainer(coor=blackMoves[BCurrTurn]),'B')
+		push!(IFP_ar, IFP)
+		push!(Mov_ar, blackMoves[BCurrTurn])
 	end
 	BCurrTurn = BCurrTurn + 1
 
@@ -270,9 +278,25 @@ while WTotalTurn > WCurrTurn || BTotalTurn > BCurrTurn
 	if WTotalTurn > WCurrTurn
 		println("WM",whiteMoves[WCurrTurn])
 		IFP = play(IFP,board,CoorContainer(coor=whiteMoves[WCurrTurn]),'W')
+		push!(IFP_ar, IFP)
+		push!(Mov_ar, whiteMoves[WCurrTurn])
 	end
 	WCurrTurn = WCurrTurn + 1
 end
 
+
+# Reshape any-array data to fixed size array data
+IFP_arF = Array{Float64}(19,19,12,size(IFP_ar)[1])
+Mov_arF = Array{Int64}(1,2,size(Mov_ar)[1])
+for i=1:size(IFP_ar)[1]
+	IFP_arF[:,:,:,i] = IFP_ar[i]
+end
+for i=1:size(Mov_ar)[1]
+	Mov_arF[:,:,i] = Mov_ar[i]
+end
+
+
 println("Done")
 
+
+include("tra.jl")
