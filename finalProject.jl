@@ -26,12 +26,12 @@ function play(IFP,board,coordinate,player;initIFP=false)
 	println(" * * * * * * * * * * * * * * * * * * * * * * * * * * *")
 	x = coordinate[1][1]
 	y = coordinate[1][2]
-	plNum = getPlayerNumber(player)
-
-	# Check if move is played on a neutral square
-	if board[x,y] != 0
-		return "Error: Move not possible !"
+	if x == 0 && y == 0
+		println("Pass move")
+		return IFP
 	end
+
+	plNum = getPlayerNumber(player)
 
 	# Playing on a square that has all neutral around
 	if	board[ x+1 <= 19 ? x+1 : x , y ] == 0 &&
@@ -40,7 +40,7 @@ function play(IFP,board,coordinate,player;initIFP=false)
 		board[ x , y-1 >= 1  ? y-1 : y ] == 0
 			println(player, " played on ", coorToLet(coordinate))
 			coordToBoard(board,coordinate,player)
-			writedlm("board.txt", board)
+			writedlm(boardPath, board)
 			return updateIFP(IFP,board,coordinate,player)
 	end
 
@@ -54,11 +54,11 @@ function play(IFP,board,coordinate,player;initIFP=false)
 	for i=1:size(nnn)[1]
 		println("checking NNN",nnn[i])
 		curCoor = numToCoor(nnn[i][1],nnn[i][2])
-		curPlyr = getCoorPl(board,curCoor)
+		#curPlyr = getCoorPl(board,curCoor)
 		hasLiberty(board,curCoor,neurtalize=true)
 	end
 
-	writedlm("board.txt", board)
+	writedlm(boardPath, board)
 	return updateIFP(IFP,board,coordinate,player)
 end
 
@@ -123,21 +123,21 @@ function getNonNeurtalNeigbours(board,coordinate)
 	y = getCoorY(coordinate)
 		
 	#println("Looking non-neutral neighbours of ", x*10 + y)
-	if	(x+1 <= 19) && (board[ x+1 , y ] != 0)
+	if	(x+1 <= 19) && (1 <= y <= 19)  && (board[ x+1 , y ] != 0)
 		#println("\t", (x+1)*10 + y , " is not neutral - Down")
-		addCoordinate(coords,numToCoor((x+1)*10 + y))
+		addCoordinate(coords,numToCoor(x+1 , y))
 	end
-	if	(x-1 >= 1)  && (board[ x-1 , y ] != 0)
+	if	(x-1 >= 1)  && (1 <= y <= 19)  && (board[ x-1 , y ] != 0)
 		#println("\t", (x-1)*10 + y , " is not neutral - Up")
-		addCoordinate(coords,numToCoor((x-1)*10 + y))
+		addCoordinate(coords,numToCoor(x-1 , y))
 	end
-	if	(y+1 <= 19) && (board[ x , y+1 ] != 0)
+	if	(y+1 <= 19) && (1 <= x <= 19)  && (board[ x , y+1 ] != 0)
 		#println("\t", x*10 + y+1 , " is not neutral - Right")
-		addCoordinate(coords,numToCoor(x*10 + y+1))
+		addCoordinate(coords,numToCoor(x , y+1))
 	end
-	if	(y-1 >= 1)  && (board[ x , y-1 ] != 0)
+	if	(y-1 >= 1)  && (1 <= x <= 19)  && (board[ x , y-1 ] != 0)
 		#println("\t", x*10 + y-1 , " is not neutral - Left")
-		addCoordinate(coords,numToCoor(x*10 + y-1))
+		addCoordinate(coords,numToCoor(x , y-1))
 	end
 	return coords
 end
@@ -150,19 +150,19 @@ function getNeurtalNeigbours(board,coordinate)
 		y = getCoorY(coordinate)
 		
 		#println("Looking neutral neighbours of ", (x*10) + y)
-		if	(x+1 <= 19) && (board[ x+1 , y ] == 0)
+		if	(x+1 <= 19) && (1 <= y <= 19) && (board[ x+1 , y ] == 0)
 			#println("\t",(x+1)*10 + y , " is neutral - Down")
 			addCoordinate(coords,numToCoor((x+1)*10 + y))
 		end
-		if	(x-1 >= 1)  && (board[ x-1 , y ] == 0)
+		if	(x-1 >= 1)  && (1 <= y <= 19) && (board[ x-1 , y ] == 0)
 			#println("\t",(x-1)*10 + y , " is neutral - Up")
 			addCoordinate(coords,numToCoor((x-1)*10 + y))
 		end
-		if	(y+1 <= 19) && (board[ x , y+1 ] == 0)
+		if	(y+1 <= 19) && (1 <= x <= 19) && (board[ x , y+1 ] == 0)
 			#println("\t",x*10 + y+1 , " is neutral - Right")
 			addCoordinate(coords,numToCoor(x*10 + y+1))
 		end
-		if	(y-1 >= 1)  && (board[ x , y-1 ] == 0)
+		if	(y-1 >= 1)  && (1 <= x <= 19) && (board[ x , y-1 ] == 0)
 			#println("\t",x*10 + y-1 , " is neutral - Left")
 			addCoordinate(coords,numToCoor(x*10 + y-1))
 		end
@@ -229,25 +229,50 @@ function getStartingPlayer(fileName)
 	close(file)
 
 	hnCoor = filter(x -> contains(x, ";"),lines)[2][2] # Filtering ;
-
 end
 
 # Open file
 fileN = "Dataset/2015-05-01-3.sgf"
+boardPath = "/mnt/kufs/scratch/koguzhan/board.txt"
+#include("Tests/tests.jl")
 
+
+println("Starting game")
 # Generate 19x19 board
 board = zeros(19,19)	# Initialization of empty board
 
-
+# Placing handicaps to board
 hndCoords = getHandicapCoordinates(fileN)
+coordToBoard(board,hndCoords,'B')
 
+# Reading White & Black moves
 whiteMoves = getWhiteMoves(fileN)
 blackMoves = getBlackMoves(fileN)
+WTotalTurn = size(whiteMoves)[1]
+BTotalTurn = size(blackMoves)[1]
 
+# Playing turn by turn
+WCurrTurn = 2
+BCurrTurn = 1
+# First turn of White
+IFP = play(nothing,board,CoorContainer(coor=whiteMoves[1]),'W',initIFP=true)
+# Rest of the turns
+while WTotalTurn > WCurrTurn || BTotalTurn > BCurrTurn
+	# White always plays first
+	# Black move
+	if BTotalTurn > BCurrTurn
+		println("BM",blackMoves[BCurrTurn])
+		IFP = play(IFP,board,CoorContainer(coor=blackMoves[BCurrTurn]),'B')
+	end
+	BCurrTurn = BCurrTurn + 1
 
-
-include("Tests/tests.jl")
-
+	# White move
+	if WTotalTurn > WCurrTurn
+		println("WM",whiteMoves[WCurrTurn])
+		IFP = play(IFP,board,CoorContainer(coor=whiteMoves[WCurrTurn]),'W')
+	end
+	WCurrTurn = WCurrTurn + 1
+end
 
 println("Done")
 

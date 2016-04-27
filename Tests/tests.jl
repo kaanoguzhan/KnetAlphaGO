@@ -11,11 +11,3 @@ IFP = play(IFP,board,CoorContainer(coor=numToCoor("43")),'W')
 
 
 IFP = play(IFP,board,CoorContainer(coor=numToCoor("34")),'W')
-
-
-s=[]
-push!(s,IFP)
-push!(s,IFP)
-push!(s,IFP)
-push!(s,IFP)
-push!(s,IFP)
