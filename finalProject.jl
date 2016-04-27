@@ -1,3 +1,4 @@
+using Knet
 include("Coordinates.jl")
 include("Players.jl")
 include("SGFReaders.jl")
@@ -176,7 +177,7 @@ end
 
 
 function updateIFP(IFPold, board, coordinate, player)
-	IFP = zeros(19,19,48)	# Empty Input feature plane for return
+	IFP = zeros(19,19,12)	# Empty Input feature plane for return
 
 	ply = getPlayerNumber(player)
 	opp = getOpponentNumber(player)
@@ -237,6 +238,7 @@ boardPath = "/mnt/kufs/scratch/koguzhan/board.txt"
 #include("Tests/tests.jl")
 
 
+
 println("Starting game")
 # Generate 19x19 board
 board = zeros(19,19)	# Initialization of empty board
@@ -287,15 +289,18 @@ end
 
 # Reshape any-array data to fixed size array data
 IFP_arF = Array{Float64}(19,19,12,size(IFP_ar)[1])
-Mov_arF = Array{Int64}(1,2,size(Mov_ar)[1])
+Mov_arF = Array{Int64}(19,19,size(Mov_ar)[1])
 for i=1:size(IFP_ar)[1]
 	IFP_arF[:,:,:,i] = IFP_ar[i]
 end
 for i=1:size(Mov_ar)[1]
-	Mov_arF[:,:,i] = Mov_ar[i]
+	if Mov_ar[i][1] != 0 && Mov_ar[i][2] != 0
+		Mov_arF[Mov_ar[i][1],Mov_ar[i][2],i] = 1
+	end
 end
-
-
+IFP_arF = map(x->Float32(x) ,IFP_arF)
+Mov_arF = map(x->x == 1  ? Float32(1) : Float32(0),Mov_arF)
+reshape(Mov_arF, 361,size(Mov_ar)[1])
 println("Done")
 
 
