@@ -1,9 +1,11 @@
-using CUDArt
+
+
 println("Training start",typeof(Mov_arF))
 
 
-println("typM",typeof(Mov_arF),"typI",typeof(IFP_arF))
-#println("Mxtr",typeof(MNIST.xtrn),"Mytr",typeof(MNIST.ytrn))
+println("typM",typeof(IFP_arF),"typI",typeof(Mov_arF))
+#include(Pkg.dir("Knet/examples/mnist.jl"))
+println("Mxtr",typeof(MNIST.xtrn),"Mytr",typeof(MNIST.ytrn))
 dtrn = minibatch(IFP_arF, Mov_arF, 25)
 #dtst = minibatch(MNIST.xtst, MNIST.ytst, 25)
 
@@ -26,18 +28,18 @@ end
 
 
 
-
 @knet function mdfun(x1)
-	x2 = cbfp(x1; f=:relu, cwindow=5, out=10)
-	return wbf(x2; f=:relu, out=361)
+    x2 = cbfp(x1; out=20, f=:relu, cwindow=5, pwindow=2)
+    return wbf(x2; out=361, f=:soft)
 end
+
 
 
 # Compileing model
 model = compile(:mdfun)
 setp(model, lr=0.1)
 
-nepoch=2
+nepoch=100
 result=zeros(nepoch)
 accdiff=0
 
@@ -55,21 +57,6 @@ for epoch=1:nepoch
 		break
 	end
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

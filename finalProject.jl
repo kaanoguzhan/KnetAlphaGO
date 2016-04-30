@@ -293,15 +293,23 @@ Mov_arF = Array{Int64}(19,19,size(Mov_ar)[1])
 for i=1:size(IFP_ar)[1]
 	IFP_arF[:,:,:,i] = IFP_ar[i]
 end
+Mov_arF = map(x-> x = 0 ,Mov_arF)
 for i=1:size(Mov_ar)[1]
 	if Mov_ar[i][1] != 0 && Mov_ar[i][2] != 0
 		Mov_arF[Mov_ar[i][1],Mov_ar[i][2],i] = 1
 	end
 end
-IFP_arF = map(x->Float32(x) ,IFP_arF)
-Mov_arF = map(x->x == 1  ? Float32(1) : Float32(0),Mov_arF)
-reshape(Mov_arF, 361,size(Mov_ar)[1])
+IFP_arF = map(x->Float32(x) ,IFP_arF)	# Convert to Float32
+Mov_arF = map(x->Float32(x) ,Mov_arF)
+
+Mov_arF = reshape(Mov_arF, 361,size(Mov_ar)[1])
 println("Done")
 
+include("train.jl")
 
-include("tra.jl")
+#  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  #
+#  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  #
+#  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  #
+#  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  #
+#  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  #
+#  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  #
