@@ -8,6 +8,11 @@ include("SGFReaders.jl")
 # player = W -> Place white stone to coordinate(s)
 # player = B -> Place black stone to coordinate(s)
 function coordToBoard(board,coords,player)
+	# Empty coords check
+	if coords == 0
+		return 
+	end
+
 	loopSize = size(coords)[1]
 
 	plNum = getPlayerNumber(player)
@@ -19,12 +24,12 @@ function coordToBoard(board,coords,player)
 	end
 end
 
-function play(IFP,board,coordinate,player;initIFP=false)
+function play(IFP,board,coordinate,player;initIFP=false,currntGame=0,totalGame=0)
 	if initIFP
 		IFP = zeros(19,19,48)	# Initialization of empty Input feature plane
 	end
 
-	println(" * * * * * * * * * * * * * * * * * * * * * * * * * * *")
+	#println(" * * * * * * * * * * * * * * * * * * * * * * * * * * *")
 	x = coordinate[1][1]
 	y = coordinate[1][2]
 	if x == 0 && y == 0
@@ -39,21 +44,21 @@ function play(IFP,board,coordinate,player;initIFP=false)
 		board[ x-1 >= 1  ? x-1 : x , y ] == 0 &&
 		board[ x , y+1 <= 19 ? y+1 : y ] == 0 &&
 		board[ x , y-1 >= 1  ? y-1 : y ] == 0
-			println(player, " played on ", coorToLet(coordinate))
+			println(player, " played on ", coorToLet(coordinate),"\t game:",currntGame," of ",totalGame)
 			coordToBoard(board,coordinate,player)
 			writedlm(boardPath, board)
 			return updateIFP(IFP,board,coordinate,player)
 	end
 
 	# Playing on a square that has PROBLEM!
-	println(player, " played on ", coorToLet(coordinate))
+	println(player, " played on ", coorToLet(coordinate),"\t game:",currntGame," of ",totalGame)
 			
 	nnn = getNonNeurtalNeigbours(board,coordinate[1])
 	coordToBoard(board,coordinate,player)
 
 	# Go through all Non Neurtal Neigbours
 	for i=1:size(nnn)[1]
-		println("checking NNN",nnn[i])
+		#println("checking NNN",nnn[i])
 		curCoor = numToCoor(nnn[i][1],nnn[i][2])
 		#curPlyr = getCoorPl(board,curCoor)
 		hasLiberty(board,curCoor,neurtalize=true)
@@ -72,7 +77,7 @@ function hasLiberty(board,coordinate;knownFriends=CoorContainer(),neurtalize=fal
 			return size(nn)[1]
 		else
 			if echo
-				println("\t",coordinate, " has ", size(nn)[1], " liberties")
+				#println("\t",coordinate, " has ", size(nn)[1], " liberties")
 			end
 			return true
 		end
@@ -101,10 +106,10 @@ function hasLiberty(board,coordinate;knownFriends=CoorContainer(),neurtalize=fal
 			end
 		end
 		if echo
-			println("\t",coordinate, " has 0 liberties")
+			#println("\t",coordinate, " has 0 liberties")
 		end
 		if neurtalize == true
-			println("Stones to be neutralized: ", knownFriends)
+			#println("Stones to be neutralized: ", knownFriends)
 			coordToBoard(board,knownFriends,'N')
 		end
 		return false
@@ -308,60 +313,68 @@ function getStartingPlayer(fileName)
 	hnCoor = filter(x -> contains(x, ";"),lines)[2][2] # Filtering ;
 end
 
-# Open file
-fileN = "Dataset/2015-05-01-3.sgf"
-boardPath = "/mnt/kufs/scratch/koguzhan/board.txt"
-#include("Tests/tests.jl")
 
+boardPath = "/mnt/kufs/scratch/koguzhan/board.txt"
 
 # Empty array for holding each turns IFP and corresponding move
 IFP_ar = []
 Mov_ar = []
 
+function playFromSGF(fileN;currntGame=0,totalGame=0)
+	println("Starting game", fileN)
 
-println("Starting game")
-# Generate 19x19 board
-board = zeros(19,19)	# Initialization of empty board
+	# Generate 19x19 board
+	board = zeros(19,19)	# Initialization of empty board
 
-# Placing handicaps to board
-hndCoords = getHandicapCoordinates(fileN)
-coordToBoard(board,hndCoords,'B')
+	# Placing handicaps to board
+	hndCoords = getHandicapCoordinates(fileN)
+	coordToBoard(board,hndCoords,'B')
 
-# Reading White & Black moves
-whiteMoves = getWhiteMoves(fileN)
-blackMoves = getBlackMoves(fileN)
-WTotalTurn = size(whiteMoves)[1]
-BTotalTurn = size(blackMoves)[1]
+	# Reading White & Black moves
+	whiteMoves = getWhiteMoves(fileN)
+	blackMoves = getBlackMoves(fileN)
+	WTotalTurn = size(whiteMoves)[1]
+	BTotalTurn = size(blackMoves)[1]
 
-# Playing turn by turn
-WCurrTurn = 2
-BCurrTurn = 1
-# First turn of White
-IFP = play(nothing,board,CoorContainer(coor=whiteMoves[1]),'W',initIFP=true)
-push!(IFP_ar, IFP)
-push!(Mov_ar, whiteMoves[1])
-# Rest of the turns
-while WTotalTurn > WCurrTurn || BTotalTurn > BCurrTurn
-	# White always plays first
-	# Black move
-	if BTotalTurn > BCurrTurn
-		println("BM",blackMoves[BCurrTurn])
-		IFP = play(IFP,board,CoorContainer(coor=blackMoves[BCurrTurn]),'B')
-		push!(IFP_ar, IFP)
-		push!(Mov_ar, blackMoves[BCurrTurn])
+	# Playing turn by turn
+	WCurrTurn = 2
+	BCurrTurn = 1
+	# First turn of White
+	IFP = play(nothing,board,CoorContainer(coor=whiteMoves[1]),'W',initIFP=true,currntGame=currntGame,totalGame=totalGame)
+	push!(IFP_ar, IFP)
+	push!(Mov_ar, whiteMoves[1])
+	# Rest of the turns
+	while WTotalTurn > WCurrTurn || BTotalTurn > BCurrTurn
+		# White always plays first
+		# Black move
+		if BTotalTurn > BCurrTurn
+			#println("BM",blackMoves[BCurrTurn])
+			IFP = play(IFP,board,CoorContainer(coor=blackMoves[BCurrTurn]),'B',currntGame=currntGame,totalGame=totalGame)
+			push!(IFP_ar, IFP)
+			push!(Mov_ar, blackMoves[BCurrTurn])
+		end
+		BCurrTurn = BCurrTurn + 1
+
+		# White move
+		if WTotalTurn > WCurrTurn
+			#println("WM",whiteMoves[WCurrTurn])
+			IFP = play(IFP,board,CoorContainer(coor=whiteMoves[WCurrTurn]),'W',currntGame=currntGame,totalGame=totalGame)
+			push!(IFP_ar, IFP)
+			push!(Mov_ar, whiteMoves[WCurrTurn])
+		end
+		WCurrTurn = WCurrTurn + 1
 	end
-	BCurrTurn = BCurrTurn + 1
-
-	# White move
-	if WTotalTurn > WCurrTurn
-		println("WM",whiteMoves[WCurrTurn])
-		IFP = play(IFP,board,CoorContainer(coor=whiteMoves[WCurrTurn]),'W')
-		push!(IFP_ar, IFP)
-		push!(Mov_ar, whiteMoves[WCurrTurn])
-	end
-	WCurrTurn = WCurrTurn + 1
 end
 
+# Read Game file names from Dataset folder and play each of them to
+# create the IFP arrays
+listOfGames = readdir("/mnt/kufs/scratch/koguzhan/Dataset")
+for i=1:size(listOfGames)[1]
+	playFromSGF("Dataset/"*listOfGames[i];currntGame=i,totalGame=size(listOfGames)[1])
+end
+playFromSGF("Dataset/2015-05-01-1.sgf")
+playFromSGF("Dataset/2015-05-01-2.sgf")
+playFromSGF("Dataset/2015-05-01-3.sgf")
 
 # Reshape any-array data to fixed size array data
 IFP_arF = Array{Float64}(19,19,26,size(IFP_ar)[1])

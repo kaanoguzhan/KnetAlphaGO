@@ -8,6 +8,11 @@
 function getHandicapNumber(lines)
 	hndLine = filter(x -> contains(x, "HA"),lines) # Filtering handicap Number line
 
+	# No Handicap
+	if hndLine==[]
+		return 0
+	end
+
 	# Single number handicap
 	if hndLine[1][3] == '[' && hndLine[1][5] == ']'
 		#println("Total Handicap number: ",Int(hndLine[1][4])-48)
