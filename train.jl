@@ -49,7 +49,7 @@ end
 
 #=
 # Value network descriped on the paper
-@knet function polnet(x1)
+@knet function valnet(x1)
     x2	= cbfp(x1; out=128, f=:relu, cwindow=5, pwindow=1, padding=2, stride=1)	# Layer 1
     x3	= cbfp(x2; out=128, f=:relu, cwindow=3, pwindow=1, padding=1, stride=1)	# Layer 2
     x4	= cbfp(x3; out=128, f=:relu, cwindow=3, pwindow=1, padding=1, stride=1)
@@ -69,17 +69,20 @@ end
 =#
 
 
+
 @knet function polnet(x1)
     x2 = cbfp(x1; out=40, f=:relu, cwindow=5, pwindow=2) 
     x3 = cbfp(x2; out=40, f=:relu, cwindow=3, pwindow=1) 
     return wbf(x3; out=361, f=:soft) 
 end
 
+
+
 # Compileing model
 model = compile(:polnet)
 setp(model, lr=0.1)
 
-nepoch=225
+nepoch=100
 result=zeros(nepoch)
 accdiff=0
 
@@ -98,7 +101,6 @@ for epoch=1:nepoch
 		break
 	end
 end
-
 
 println("Running Model batch=25")
 dtrn = minibatch(IFP_arF, Mov_arF, 25)

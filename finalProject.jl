@@ -65,11 +65,17 @@ end
 
 # knownFriends	-> Just for recursion
 # neurtalize	-> If given coordinate has no liberty it and all of its friends become empty square
-function hasLiberty(board,coordinate;knownFriends=CoorContainer(),neurtalize=false)
+function hasLiberty(board,coordinate;knownFriends=CoorContainer(),neurtalize=false,returnNum=false,echo=true)
 	nn = getNeurtalNeigbours(board,coordinate)
 	if !isContEmpty(nn)
-		println("\t",coordinate, " has ", size(nn)[1], " liberties")
-		return true
+		if returnNum
+			return size(nn)[1]
+		else
+			if echo
+				println("\t",coordinate, " has ", size(nn)[1], " liberties")
+			end
+			return true
+		end
 	else
 		#addCoordinate(knownFriends,coordinate)
 		fn = getFriendNeighbours(board,coordinate)
@@ -85,12 +91,18 @@ function hasLiberty(board,coordinate;knownFriends=CoorContainer(),neurtalize=fal
 		if !isContEmpty(fn)  
 			for i=1:size(fn)[1]
 				addCoordinate(knownFriends,fn[i])
-				if hasLiberty(board,fn[i],knownFriends=knownFriends)
-					return true
+				if hasLiberty(board,fn[i],knownFriends=knownFriends;echo=echo)
+					if returnNum
+						return size(nn)[1]
+					else
+						return true
+					end
 				end
 			end
 		end
-		println("\t",coordinate, " has 0 liberties")
+		if echo
+			println("\t",coordinate, " has 0 liberties")
+		end
 		if neurtalize == true
 			println("Stones to be neutralized: ", knownFriends)
 			coordToBoard(board,knownFriends,'N')
@@ -100,6 +112,9 @@ function hasLiberty(board,coordinate;knownFriends=CoorContainer(),neurtalize=fal
 end
 
 function getFriendNeighbours(board,coordinate)
+	if getCoorX(coordinate) == 0 || getCoorY(coordinate) == 0
+		return CoorContainer()
+	end
 	nnn = getNonNeurtalNeigbours(board,coordinate)
 	player = getCoorPl(board,coordinate)
 	coords = CoorContainer()
@@ -177,7 +192,7 @@ end
 
 
 function updateIFP(IFPold, board, coordinate, player)
-	IFP = zeros(19,19,12)	# Empty Input feature plane for return
+	IFP = zeros(19,19,26)	# Empty Input feature plane for return
 
 	ply = getPlayerNumber(player)
 	opp = getOpponentNumber(player)
@@ -219,8 +234,69 @@ function updateIFP(IFPold, board, coordinate, player)
 	# 12	Turns Since - 8
 	x = coordinate[1][1]
 	y = coordinate[1][2]	
-	IFP[:,:,12][x,y] = 2.0
+	IFP[:,:,12][x,y] = 1.0
 
+	for x=1:19, y=1:19
+	libertyNum = hasLiberty(board,numToCoor("$x$y");echo=false,returnNum=true)
+	# 13
+		if libertyNum == 1
+			IFP[:,:,13][x,y] = 1.0
+		end
+
+	# 14
+		if libertyNum == 1
+			IFP[:,:,14][x,y] = 1.0
+		end
+
+	# 15
+		if libertyNum == 1
+			IFP[:,:,15][x,y] = 1.0
+		end
+
+	# 16
+		if libertyNum == 1
+			IFP[:,:,16][x,y] = 1.0
+		end
+
+	# 17
+		if libertyNum == 1
+			IFP[:,:,17][x,y] = 1.0
+		end
+
+	# 18
+		if libertyNum == 1
+			IFP[:,:,18][x,y] = 1.0
+		end
+
+	# 19
+		if libertyNum == 1
+			IFP[:,:,19][x,y] = 1.0
+		end
+
+	# 20
+		if libertyNum == 1
+			IFP[:,:,20][x,y] = 1.0
+		end
+
+	# 21		Player Stones
+	IFP[:,:,21] = map(x -> x == ply ? 1 : 0 ,board)
+
+	# 22		Opponent Stones
+	IFP[:,:,22] = map(x -> x == opp ? 1 : 0 ,board)
+
+	# 23		Neutral/Empty Stones
+	IFP[:,:,23] = map(x -> x == neu ? 1 : 0 ,board)
+
+	# 24		Player Stones
+	IFP[:,:,24] = map(x -> x == ply ? 1 : 0 ,board)
+
+	# 25		Opponent Stones
+	IFP[:,:,25] = map(x -> x == opp ? 1 : 0 ,board)
+
+	# 26		Neutral/Empty Stones
+	IFP[:,:,26] = map(x -> x == neu ? 1 : 0 ,board)
+
+	end
 	return IFP
 end
 
@@ -238,14 +314,14 @@ boardPath = "/mnt/kufs/scratch/koguzhan/board.txt"
 #include("Tests/tests.jl")
 
 
+# Empty array for holding each turns IFP and corresponding move
+IFP_ar = []
+Mov_ar = []
+
 
 println("Starting game")
 # Generate 19x19 board
 board = zeros(19,19)	# Initialization of empty board
-
-# Empty array for holding each turns IFP and corresponding move
-IFP_ar = []
-Mov_ar = []
 
 # Placing handicaps to board
 hndCoords = getHandicapCoordinates(fileN)
@@ -288,7 +364,7 @@ end
 
 
 # Reshape any-array data to fixed size array data
-IFP_arF = Array{Float64}(19,19,12,size(IFP_ar)[1])
+IFP_arF = Array{Float64}(19,19,26,size(IFP_ar)[1])
 Mov_arF = Array{Int64}(19,19,size(Mov_ar)[1])
 for i=1:size(IFP_ar)[1]
 	IFP_arF[:,:,:,i] = IFP_ar[i]
